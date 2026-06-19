@@ -15,4 +15,6 @@ public interface BusinessRepository extends JpaRepository<Business,Long> {
     Optional<Business> findByOwnerIdAndBusinessId(Long ownerId, Long id);
 
     void deleteByBusinessIdAndOwnerId(Long id, Long ownerId);
+
+    Optional<Business> findBusinessByBusinessId(Long businessId);
 }

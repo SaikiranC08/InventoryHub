@@ -37,7 +37,7 @@ public class ProductVariant {
 
     @Enumerated(EnumType.STRING)
     private UnitType unitType;
-    private int unitValue;
+    private BigDecimal unitValue;
     private BigDecimal currentPrice;
 
     @JdbcTypeCode(SqlTypes.JSON)

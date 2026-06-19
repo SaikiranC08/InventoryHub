@@ -20,7 +20,7 @@ public class ProductVariantIdRequest {
 
     private UnitType unitType;
 
-    private int unitValue;
+    private BigDecimal unitValue;
 
     private BigDecimal currentPrice;
 
