@@ -2,11 +2,10 @@ package com.saikiran.inventory.inventory.mapper;
 
 
 
+import com.saikiran.inventory.inventory.dto.ExternalBuyerDto;
 import com.saikiran.inventory.inventory.dto.ExternalSupplierDto;
 import com.saikiran.inventory.inventory.entities.Inventory;
-import com.saikiran.inventory.inventory.entities.external.PurchaseOrder;
-import com.saikiran.inventory.inventory.entities.external.PurchaseOrderItem;
-import com.saikiran.inventory.inventory.entities.external.StockMovement;
+import com.saikiran.inventory.inventory.entities.external.*;
 import com.saikiran.inventory.product.dto.request.ProductIdRequest;
 import com.saikiran.inventory.product.dto.request.ProductVariantIdRequest;
 import org.mapstruct.Mapper;
@@ -31,6 +30,16 @@ public interface InventoryMapper {
     @Mapping(target = "variant", ignore = true)
     PurchaseOrderItem toPurchaseOrderItem(ExternalSupplierDto dto);
 
+    //external buyer
+    @Mapping(target = "toBusiness", ignore = true)
+    @Mapping(target = "fromBusiness", ignore = true)
+    @Mapping(target = "createdAt",ignore = true)
+    SalesOrder toSalesOrder(ExternalBuyerDto dto);
+
+    @Mapping(target = "variant", ignore = true)
+    @Mapping(target = "salesOrder", ignore = true)
+    SalesOrderItem toSalesOrderItem(ExternalBuyerDto dto);
+
 
     @Mapping(target = "productVariant", ignore = true)
     @Mapping(target = "business",ignore = true)
@@ -39,9 +48,21 @@ public interface InventoryMapper {
     @Mapping(target = "inventoryId",ignore = true)
     Inventory toInventory(ExternalSupplierDto dto);
 
+    @Mapping(target = "productVariant", ignore = true)
+    @Mapping(target = "business",ignore = true)
+    @Mapping(target = "createdAt",ignore = true)
+    @Mapping(target = "updatedAt",ignore = true)
+    @Mapping(target = "inventoryId",ignore = true)
+    Inventory toInventory(ExternalBuyerDto dto);
+
 
     @Mapping(target = "stockMovementId" , ignore = true)
     @Mapping(target = "inventory",ignore = true)
     @Mapping(target = "createdAt",ignore = true)
     StockMovement toStockMovement(ExternalSupplierDto dto);
+    @Mapping(target = "stockMovementId", ignore = true)
+    @Mapping(target = "inventory", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    StockMovement toStockMovement(ExternalBuyerDto dto);
+
 }

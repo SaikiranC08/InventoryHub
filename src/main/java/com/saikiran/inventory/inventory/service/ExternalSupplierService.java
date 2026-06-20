@@ -9,6 +9,7 @@ import com.saikiran.inventory.inventory.entities.external.PurchaseOrder;
 import com.saikiran.inventory.inventory.entities.external.PurchaseOrderItem;
 import com.saikiran.inventory.inventory.entities.external.StockMovement;
 import com.saikiran.inventory.inventory.enums.MovementType;
+import com.saikiran.inventory.inventory.enums.OrderStatus;
 import com.saikiran.inventory.inventory.enums.ReferenceType;
 import com.saikiran.inventory.inventory.mapper.InventoryMapper;
 import com.saikiran.inventory.inventory.repository.InventoryRepository;
@@ -17,7 +18,6 @@ import com.saikiran.inventory.inventory.repository.PurchaseOrderRepository;
 import com.saikiran.inventory.inventory.repository.StockMovementRepository;
 import com.saikiran.inventory.product.dto.response.ProductIdResponse;
 import com.saikiran.inventory.product.dto.response.ProductVariantIdResponse;
-import com.saikiran.inventory.product.entities.Product;
 import com.saikiran.inventory.product.entities.ProductVariant;
 import com.saikiran.inventory.product.repository.ProductVariantRepository;
 import com.saikiran.inventory.product.repository.productRepository;
@@ -38,7 +38,6 @@ public class ExternalSupplierService {
     private final InventoryMapper inventoryMapper;
     private final BusinessRepository businessRepository;
     private final ProductVariantRepository productVariantRepository;
-    private final productRepository productRepository;
 
     //helper methods
     private ProductIdResponse getOrCreateProduct(ExternalSupplierDto dto) {
@@ -65,6 +64,7 @@ public class ExternalSupplierService {
 
         //set business to purchaseOrder
         purchaseOrder.setToBusiness(business);
+        purchaseOrder.setStatus(OrderStatus.COMPLETED);
 
         //save purchaseOrder
         return purchaseOrderRepository.save(purchaseOrder);

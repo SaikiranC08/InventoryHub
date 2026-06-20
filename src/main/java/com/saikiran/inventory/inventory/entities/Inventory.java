@@ -5,16 +5,15 @@ import com.saikiran.inventory.business.entity.Business;
 import com.saikiran.inventory.product.entities.Product;
 import com.saikiran.inventory.product.entities.ProductVariant;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -34,7 +33,7 @@ public class Inventory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long inventoryId;
-    private int quantity;
+    private Integer quantity;
     private int reorderLevel;
 
     @CreationTimestamp
