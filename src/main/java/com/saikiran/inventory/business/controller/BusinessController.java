@@ -18,7 +18,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/v1/businesses")
+@RequestMapping("/api/v1/business")
 public class BusinessController {
 
     private final BusinessService businessService;
