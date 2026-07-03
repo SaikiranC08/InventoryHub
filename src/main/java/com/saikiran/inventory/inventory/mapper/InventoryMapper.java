@@ -2,11 +2,10 @@ package com.saikiran.inventory.inventory.mapper;
 
 
 
-import com.saikiran.inventory.inventory.dto.ExternalBuyerDto;
-import com.saikiran.inventory.inventory.dto.ExternalSupplierDto;
-import com.saikiran.inventory.inventory.dto.StockTransferDto;
+import com.saikiran.inventory.inventory.dto.*;
 import com.saikiran.inventory.inventory.entities.Inventory;
 import com.saikiran.inventory.inventory.entities.external.*;
+import com.saikiran.inventory.inventory.entities.internal.StockRequest;
 import com.saikiran.inventory.inventory.entities.internal.StockTransfer;
 import com.saikiran.inventory.product.dto.request.ProductIdRequest;
 import com.saikiran.inventory.product.dto.request.ProductVariantIdRequest;
@@ -79,4 +78,26 @@ public interface InventoryMapper {
     @Mapping(target = "inventory", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     StockMovement toStockMovement(StockTransferDto dto);
+
+    //stock requesting
+    @Mapping(target = "productVariant", ignore = true)
+    @Mapping(target = "toBusiness",ignore = true)
+    @Mapping(target = "fromBusiness",ignore = true)
+    @Mapping(target = "createdAt",ignore = true)
+    @Mapping(target = "updatedAt",ignore = true)
+    StockRequest toStockRequest(StockRequestDto dto);
+
+    @Mapping(target = "fromBusinessId", source = "fromBusiness.businessId")
+    @Mapping(target = "toBusinessId", source = "toBusiness.businessId")
+    @Mapping(target = "productVariantId", source = "productVariant.variantId")
+    StockRequestResponse toResponse(StockRequest entity);
+
+    //stock request entity to stock transfer dto
+    @Mapping(target = "fromBusinessId", source = "fromBusiness.businessId")
+    @Mapping(target = "toBusinessId", source = "toBusiness.businessId")
+    @Mapping(target = "productVariantId", source = "productVariant.variantId")
+    @Mapping(target = "unitPrice" , source = "offeredUnitPrice")
+    @Mapping(target = "totalPrice" , source = "offeredTotalPrice")
+    @Mapping(target = "orderStatus",ignore = true)
+    StockTransferDto toStockTransferDto(StockRequest entity);
 }
