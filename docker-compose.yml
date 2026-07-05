@@ -1,0 +1,72 @@
+version: "3.9"
+
+services:
+  postgres-db:
+    image: postgres:16
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
+    build: ./Auth_Service
+    container_name: inventoryhub-auth-service
+    environment:
+      DB_HOST: postgres-db
+      DB_PORT: 5432
+      AUTH_DB_NAME: auth_db
+      DB_USERNAME: postgres
+      DB_PASSWORD: root
+      SERVER_PORT: 9898
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    ports:
+      - "9898:9898"
+
+  inventory-service:
+    build: ./inventory
+    container_name: inventoryhub-inventory-service
+    environment:
+      DB_HOST: postgres-db
+      DB_PORT: 5432
+      INVENTORY_DB_NAME: inventorydb
+      DB_USERNAME: postgres
+      DB_PASSWORD: root
+      SERVER_PORT: 8080
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+
+  kong:
+    image: kong:3.6
+    container_name: inventoryhub-kong
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /kong/kong.yml
+      KONG_PROXY_LISTEN: "0.0.0.0:8000"
+      KONG_ADMIN_LISTEN: "0.0.0.0:8001"
+      KONG_UNTRUSTED_LUA_SANDBOX_REQUIRES: "cjson.safe"
+    volumes:
+      - ./kong/kong.yml:/kong/kong.yml
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    depends_on:
+      - auth-service
+      - inventory-service
+
+volumes:
+  pgdata:
