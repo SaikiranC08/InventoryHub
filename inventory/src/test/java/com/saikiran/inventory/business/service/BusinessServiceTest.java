@@ -8,7 +8,6 @@ import com.saikiran.inventory.business.enums.BusinessType;
 import com.saikiran.inventory.business.mapper.businessResponseMapper;
 import com.saikiran.inventory.business.repository.BusinessRepository;
 
-import net.bytebuddy.asm.Advice;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -20,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -148,5 +148,116 @@ class BusinessServiceTest {
                 businessRepository,
                 businessResponseMapper
         );
+    }
+
+    //deleting business info
+    @Test
+    void shouldDeleteBusinessInfo(){
+        Business business = new Business();
+        business.setBusinessId(1L);
+
+        BusinessResponseDto dto = new BusinessResponseDto();
+        dto.setBusinessId(1L);
+
+        Mockito.when(businessRepository.findByOwnerIdAndBusinessId(2L,1L)).thenReturn(Optional.of(business));
+        Mockito.when(businessResponseMapper.toResponseDto(business)).thenReturn(dto);
+        BusinessResponseDto result = businessService.deleteBusinessInfo(1L,2L);
+
+        verify(businessRepository,times(1)).deleteByBusinessIdAndOwnerId(1L,2L);
+        assertEquals(1L,result.getBusinessId());
+    }
+
+    @Test
+    void shouldNotDeleteBusinessInfoWhenBusinessInfoNotFound(){
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                ()->businessService.deleteBusinessInfo(1L,2L));
+
+        assertEquals("Business info not found",exception.getMessage());
+
+        verifyNoInteractions(businessResponseMapper);
+    }
+
+    //specific business info
+    @Test
+    void shouldGetBusinessInfoWhenBusinessIdAndOwnerIdPresent(){
+        Business business = new Business();
+        business.setBusinessId(1L);
+        business.setOwnerId(2L);
+
+        BusinessResponseDto dto = new BusinessResponseDto();
+        dto.setBusinessId(1L);
+        dto.setOwnerId(2L);
+
+        Mockito.when(businessRepository.findByOwnerIdAndBusinessId(2L,1L)).thenReturn(Optional.of(business));
+        Mockito.when(businessResponseMapper.toResponseDto(business)).thenReturn(dto);
+
+        BusinessResponseDto result = businessService.getBusinessInfoByOwnerIdAndBusinessId(2L,1L);
+
+        assertEquals(1L,result.getBusinessId());
+        assertEquals(2L,business.getOwnerId());
+
+        verify(businessRepository).findByOwnerIdAndBusinessId(2L,1L);
+        verify(businessResponseMapper).toResponseDto(business);
+
+    }
+    @Test
+    void shouldUpdateBusinessInfo() {
+
+        // Arrange
+
+        Business business = new Business();
+        business.setBusinessId(1L);
+        business.setCity("thane");
+
+        BusinessRequestDto request = new BusinessRequestDto();
+        request.setOwnerId(2L);
+        request.setCity("mumbai");
+
+        BusinessResponseDto responseDto = new BusinessResponseDto();
+        responseDto.setBusinessId(1L);
+        responseDto.setCity("mumbai");
+
+        when(businessRepository.findByOwnerIdAndBusinessId(2L, 1L))
+                .thenReturn(Optional.of(business));
+
+        // Simulate what MapStruct does
+        doAnswer(invocation -> {
+            BusinessRequestDto dto = invocation.getArgument(0);
+            Business entity = invocation.getArgument(1);
+
+            entity.setCity(dto.getCity());
+
+            return null;
+        }).when(businessResponseMapper)
+          .updateInfoByDto(any(BusinessRequestDto.class), any(Business.class));
+
+        when(businessRepository.save(business))
+                .thenReturn(business);
+
+        when(businessResponseMapper.toResponseDto(business))
+                .thenReturn(responseDto);
+
+        // Act
+
+        BusinessResponseDto result =
+                businessService.updateBusinessInfo(request, 1L);
+
+        // Assert
+
+        assertNotNull(result);
+        assertEquals("mumbai", result.getCity());
+
+        verify(businessRepository)
+                .findByOwnerIdAndBusinessId(2L, 1L);
+
+        verify(businessResponseMapper)
+                .updateInfoByDto(request, business);
+
+        verify(businessRepository)
+                .save(business);
+
+        verify(businessResponseMapper)
+                .toResponseDto(business);
     }
 }

@@ -59,7 +59,7 @@ public class BusinessController {
     @PatchMapping("/{businessId}")
     public ResponseEntity<BusinessResponseDto> updateBusinessInfo(
             @RequestHeader("X-User-Id") @NotNull Long ownerId,
-            @PathVariable Long businessId,
+            @PathVariable("businessId") Long businessId,
             @RequestBody @Valid BusinessRequestDto dto
     ){
 

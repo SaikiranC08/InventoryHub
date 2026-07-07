@@ -22,14 +22,16 @@ public class CategoryService {
     public List<CategoryResponse> getCategories(){
         List<Category> data = categoryRepository.findAll();
 
-        return data.stream().map(category -> new CategoryResponse(category.getCategoryId(), category.getCategoryName()))
+        return data.stream()
+                .map(category -> new CategoryResponse(category.getCategoryId(), category.getCategoryName()))
                 .toList();
     }
 
     public List<CategoryAttributeResponse> getAttributes(Long id){
         List<CategoryAttribute> data = categoryAttributeRepository.findByCategoryCategoryId(id);
 
-        return data.stream().map(categoryAttribute -> new CategoryAttributeResponse(categoryAttribute.getAttributeKey(),categoryAttribute.getDataType()))
+        return data.stream()
+                .map(categoryAttribute -> new CategoryAttributeResponse(categoryAttribute.getAttributeKey(),categoryAttribute.getDataType()))
                 .toList();
 
     }

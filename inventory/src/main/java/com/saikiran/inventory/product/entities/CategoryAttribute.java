@@ -3,11 +3,13 @@ package com.saikiran.inventory.product.entities;
 import com.saikiran.inventory.product.enums.AttributeDataType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(
