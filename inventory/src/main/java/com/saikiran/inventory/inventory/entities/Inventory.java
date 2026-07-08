@@ -2,7 +2,6 @@ package com.saikiran.inventory.inventory.entities;
 
 
 import com.saikiran.inventory.business.entity.Business;
-import com.saikiran.inventory.product.entities.Product;
 import com.saikiran.inventory.product.entities.ProductVariant;
 import jakarta.persistence.*;
 import lombok.*;
@@ -14,6 +13,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity

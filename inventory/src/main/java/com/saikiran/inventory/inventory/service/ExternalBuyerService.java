@@ -44,11 +44,6 @@ public class ExternalBuyerService {
                                                new RuntimeException("product variant not found"));
     }
 
-    private ProductVariant getProductVariant(Long id){
-        return productVariantRepository.findProductVariantByVariantId(id)
-                .orElseThrow(()->
-                        new RuntimeException("product not found"));
-    }
 
     private Business getBusiness(ExternalBuyerDto dto) {
 

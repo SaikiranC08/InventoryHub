@@ -3,6 +3,7 @@ package com.saikiran.inventory.inventory.entities.external;
 import com.saikiran.inventory.product.entities.ProductVariant;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,6 +16,7 @@ import java.math.BigDecimal;
 @Table(name = "sales_order_items")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class SalesOrderItem {
