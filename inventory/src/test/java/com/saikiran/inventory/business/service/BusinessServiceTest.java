@@ -243,7 +243,7 @@ class BusinessServiceTest {
         BusinessResponseDto result =
                 businessService.updateBusinessInfo(request, 1L);
 
-        // Assert
+
 
         assertNotNull(result);
         assertEquals("mumbai", result.getCity());

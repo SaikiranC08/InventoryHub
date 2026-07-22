@@ -1,9 +1,10 @@
 package com.saikiran.inventory.inventory.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -127,6 +128,134 @@ public class ExternalBuyerServiceTest {
 
          verify(inventoryRepository)
          .save(oldInventory);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenProductVariantDoesNotExist(){
+
+        ExternalBuyerDto buyerDto = ExternalBuyerDto.builder().variantId(1L).build();
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                ()-> externalBuyerService.updateInventoryStockForExternalBuyer(buyerDto)
+                );
+
+            assertEquals("product variant not found",exception.getMessage());
+
+    }
+
+    @Test
+    void shouldThrowExceptionWhenBusinessDoesNotExist(){
+
+        ExternalBuyerDto buyerDto = ExternalBuyerDto.builder()
+                .businessId(1L)
+                .variantId(1L)
+                .quantity(1)
+                .build();
+
+        ProductVariant productVariant = ProductVariant.builder()
+                .variantId(1L)
+                .build();
+
+        when(productVariantRepository.findProductVariantByVariantId(anyLong())).thenReturn(Optional.of(productVariant));
+        when(businessRepository.findBusinessByBusinessId(anyLong())).thenReturn(Optional.empty());
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> externalBuyerService.updateInventoryStockForExternalBuyer(buyerDto));
+
+        assertEquals(" business not found", exception.getMessage());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenInventoryDoesNotExist(){
+
+        ExternalBuyerDto buyerDto = ExternalBuyerDto.builder()
+                .businessId(1L)
+                .variantId(1L)
+                .quantity(1)
+                .build();
+
+        ProductVariant productVariant = ProductVariant.builder()
+                .variantId(1L)
+                .build();
+
+        Business business = Business.builder()
+                .businessId(1L)
+                .build();
+
+        SalesOrder salesOrder = SalesOrder.builder()
+                .salesOrderId(1L)
+                .customerName("jack")
+                .build();
+
+        SalesOrderItem salesOrderItem = SalesOrderItem.builder()
+                .salesOrderItemId(1L)
+                .build();
+
+        when(productVariantRepository.findProductVariantByVariantId(anyLong())).thenReturn(Optional.of(productVariant));
+        when(businessRepository.findBusinessByBusinessId(anyLong())).thenReturn(Optional.of(business));
+        when(inventoryMapper.toSalesOrder(buyerDto)).thenReturn(salesOrder);
+        when(salesOrderRepository.save(salesOrder)).thenReturn(salesOrder);
+        when(inventoryMapper.toSalesOrderItem(buyerDto)).thenReturn(salesOrderItem);
+        when(salesOrderItemRepository.save(salesOrderItem)).thenReturn(salesOrderItem);
+        when(inventoryRepository.findInventoryByBusiness_BusinessIdAndProductVariant_VariantId(1L,1L)).thenReturn(Optional.empty());
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> externalBuyerService.updateInventoryStockForExternalBuyer(buyerDto));
+
+        assertEquals("inventory not found", exception.getMessage());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenStockIsInsufficient(){
+
+        ExternalBuyerDto buyerDto = ExternalBuyerDto.builder()
+                .businessId(1L)
+                .variantId(1L)
+                .quantity(10)
+                .build();
+
+        ProductVariant productVariant = ProductVariant.builder()
+                .variantId(1L)
+                .build();
+
+        Business business = Business.builder()
+                .businessId(1L)
+                .build();
+
+        SalesOrder salesOrder = SalesOrder.builder()
+                .salesOrderId(1L)
+                .customerName("jack")
+                .build();
+
+        SalesOrderItem salesOrderItem = SalesOrderItem.builder()
+                .salesOrderItemId(1L)
+                .build();
+
+        Inventory inventory = Inventory.builder()
+                .business(business)
+                .productVariant(productVariant)
+                .quantity(8)
+                .build();
+
+        Inventory inventoryToSave = Inventory.builder()
+                .business(business)
+                .productVariant(productVariant)
+                .quantity(10)
+                .build();
+
+        when(productVariantRepository.findProductVariantByVariantId(anyLong())).thenReturn(Optional.of(productVariant));
+        when(businessRepository.findBusinessByBusinessId(anyLong())).thenReturn(Optional.of(business));
+        when(inventoryMapper.toSalesOrder(buyerDto)).thenReturn(salesOrder);
+        when(salesOrderRepository.save(salesOrder)).thenReturn(salesOrder);
+        when(inventoryMapper.toSalesOrderItem(buyerDto)).thenReturn(salesOrderItem);
+        when(salesOrderItemRepository.save(salesOrderItem)).thenReturn(salesOrderItem);
+        when(inventoryRepository.findInventoryByBusiness_BusinessIdAndProductVariant_VariantId(1L,1L)).thenReturn(Optional.of(inventory));
+        when(inventoryMapper.toInventory(buyerDto)).thenReturn(inventoryToSave);
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> externalBuyerService.updateInventoryStockForExternalBuyer(buyerDto));
+
+        assertEquals("Insufficient stock", exception.getMessage());
     }
 
 }
