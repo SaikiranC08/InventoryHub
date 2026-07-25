@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -30,4 +31,8 @@ public interface ConversationRepository extends JpaRepository<Conversation,Long>
             Long businessOneId,
             Long businessTwoId
     );
+
+    Optional<Conversation> findConversationById(Long id);
+
+    List<Conversation> findByBusinessOne_BusinessIdOrBusinessTwo_BusinessIdOrderByLastMessageTimeDesc(Long businessOne,Long businessTwo);
 }

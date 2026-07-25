@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -13,5 +15,6 @@ import lombok.NoArgsConstructor;
 public class SendMessageRequest {
     private Long conversationId;
     private Long receiverBusinessId;
-    private String message;
+    private String content;
+    private LocalDateTime sentAt;
 }

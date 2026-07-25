@@ -3,14 +3,18 @@ package com.saikiran.inventory.messaging.entity;
 
 import com.saikiran.inventory.business.entity.Business;
 import jakarta.persistence.*;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.format.annotation.DateTimeFormat;
+
 
 import java.time.LocalDateTime;
 
 @Entity
+@Builder
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "conversations")
 public class Conversation {
 
@@ -25,6 +29,13 @@ public class Conversation {
     @ManyToOne(fetch = FetchType.LAZY,optional = false)
     @JoinColumn(name = "business_two_id")
     private Business businessTwo;
+
+    private String lastMessage;
+
+    private Long lastMessageSenderId;
+
+    @CreationTimestamp
+    private LocalDateTime lastMessageTime;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

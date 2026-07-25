@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -37,6 +38,14 @@ public class BusinessService {
 
         return info.stream().map(businessResponseMapper::toResponseDto).toList();
     }
+
+    public Optional<Business> getBusinessInfoById(Long id){
+        if(id == null){
+            throw new RuntimeException("send ownerId");
+        }
+        return businessRepository.findBusinessByBusinessId(id);
+    }
+
 
     //deleting the business info
     @Transactional
