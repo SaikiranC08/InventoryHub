@@ -32,6 +32,8 @@ public class Conversation {
 
     private String lastMessage;
 
+    private Long lastMessageId;
+
     private Long lastMessageSenderId;
 
     @CreationTimestamp

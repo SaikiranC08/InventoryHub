@@ -11,9 +11,12 @@ import com.saikiran.inventory.messaging.dto.response.ConversationSummaryResponse
 import com.saikiran.inventory.messaging.dto.response.MessageHistoryResponse;
 import com.saikiran.inventory.messaging.dto.response.MessageResponse;
 import com.saikiran.inventory.messaging.entity.Conversation;
+import com.saikiran.inventory.messaging.entity.ConversationState;
 import com.saikiran.inventory.messaging.entity.Message;
 import com.saikiran.inventory.messaging.repository.ConversationRepository;
+import com.saikiran.inventory.messaging.repository.ConversationStateRepository;
 import com.saikiran.inventory.messaging.repository.MessageRepository;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,6 +36,7 @@ public class MessagingService {
     private final MessageRepository messageRepository;
     private final BusinessService businessService;
     private final SimpMessagingTemplate simpMessagingTemplate;
+    private final ConversationStateRepository conversationStateRepository;
 
 
     private void validateParticipant(Conversation conversation, Long businessId) throws AccessDeniedException {
@@ -96,6 +100,20 @@ public class MessagingService {
                                     .businessTwo(receiver)
                                     .build()
                 );
+
+                ConversationState stateOne =
+                        ConversationState.builder()
+                                         .conversation(conversation)
+                                         .business(sender)
+                                         .build();
+
+                ConversationState stateTwo =
+                        ConversationState.builder()
+                                         .conversation(conversation)
+                                         .business(receiver)
+                                         .build();
+
+                conversationStateRepository.saveAll(List.of(stateOne, stateTwo));
             }
 
         }
@@ -184,8 +202,27 @@ public class MessagingService {
 
         List<Conversation> conversations = conversationRepository.findByBusinessOne_BusinessIdOrBusinessTwo_BusinessIdOrderByLastMessageTimeDesc(businessId,businessId);
 
+
         return conversations.stream()
                             .map(conversation -> {
+
+                                ConversationState state = conversationStateRepository.findByConversationAndBusiness_BusinessId(conversation,businessId)
+                                        .orElseThrow(()-> new RuntimeException("conversation state not found"));
+
+                                Long unreadCount;
+                                if(state.getLastReadMessage() == null){
+                                    unreadCount = messageRepository.countByConversation_IdAndSender_BusinessIdNot(
+                                                    conversation.getId(),
+                                                    businessId);
+                                }
+                                else{
+                                    unreadCount = messageRepository
+                                            .countByConversation_IdAndIdGreaterThanAndSender_BusinessIdNot(
+                                                    conversation.getId(),
+                                                    state.getLastReadMessage().getId(),
+                                                    businessId);
+                                }
+
 
                                 Business otherBusiness =
                                         conversation.getBusinessOne().getBusinessId().equals(businessId)
@@ -199,8 +236,46 @@ public class MessagingService {
                                                                   .lastMessage(conversation.getLastMessage())
                                                                   .lastMessageTime(conversation.getLastMessageTime())
                                                                   .lastMessageSenderId(conversation.getLastMessageSenderId())
+                                                                  .unreadCount(unreadCount)
                                                                   .build();
                             })
                             .toList();
+    }
+
+    public void markConversationAsRead(Long conversationId,Long businessId, Long lastReadMessageId) throws AccessDeniedException {
+
+        Conversation conversation = loadConversation(conversationId);
+
+        validateParticipant(conversation, businessId);
+
+        ConversationState state = conversationStateRepository
+                .findByConversationAndBusiness_BusinessId(conversation, businessId)
+                .orElseThrow(() -> new RuntimeException("Conversation state not found."));
+
+        Message previousMessage = state.getLastReadMessage();
+
+        if (previousMessage != null &&
+                lastReadMessageId < previousMessage.getId()) {
+            throw new IllegalArgumentException(
+                    "Cannot move read position backwards.");
+        }
+
+        if (previousMessage != null &&
+                previousMessage.getId().equals(lastReadMessageId)) {
+            return;
+        }
+
+        Message message = messageRepository.findById(lastReadMessageId)
+                                           .orElseThrow(() -> new RuntimeException(
+                                                   "Message not found with id: " + lastReadMessageId));
+
+        if (!message.getConversation().getId().equals(conversationId)) {
+            throw new IllegalArgumentException(
+                    "Message does not belong to this conversation.");
+        }
+
+        state.setLastReadMessage(message);
+
+        conversationStateRepository.save(state);
     }
 }

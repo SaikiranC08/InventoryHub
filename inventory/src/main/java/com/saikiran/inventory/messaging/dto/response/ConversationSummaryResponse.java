@@ -22,4 +22,6 @@ public class ConversationSummaryResponse {
     private LocalDateTime lastMessageTime;
 
     private Long lastMessageSenderId;
+
+    private Long unreadCount;
 }
