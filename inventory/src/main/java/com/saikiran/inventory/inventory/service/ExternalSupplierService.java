@@ -23,11 +23,13 @@ import com.saikiran.inventory.product.repository.ProductVariantRepository;
 import com.saikiran.inventory.product.repository.productRepository;
 import com.saikiran.inventory.product.service.ProductService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class ExternalSupplierService {
 
     private final ProductService productService;
@@ -41,25 +43,25 @@ public class ExternalSupplierService {
 
     //helper methods
     private ProductIdResponse getOrCreateProduct(ExternalSupplierDto dto) {
-
+        log.debug("Resolving supplier product for businessId={}, productName={}", dto.getToBusinessId(), dto.getProductName());
         return productService.getOrCreateProductId(inventoryMapper.toProductIdDto(dto));
     }
 
     private ProductVariantIdResponse getOrCreateProductVariant(ExternalSupplierDto dto) {
-
+        log.debug("Resolving supplier variant for businessId={}, productName={}, sku={}", dto.getToBusinessId(), dto.getProductName(), dto.getSku());
         return productService.getOrCreateProductVariantId(inventoryMapper.toProductVariantIdDto(dto)
         );
     }
 
     private Business getBusiness(ExternalSupplierDto dto) {
-
+        log.debug("Loading target business for businessId={}", dto.getToBusinessId());
         return businessRepository.findBusinessByBusinessId(dto.getToBusinessId())
                                  .orElseThrow(() ->
                                          new RuntimeException(" business not found"));
     }
 
     private PurchaseOrder createPurchaseOrder(ExternalSupplierDto dto, Business business) {
-
+        log.debug("Creating purchase order for businessId={}, supplierName={}", business.getBusinessId(), dto.getSupplierName());
         PurchaseOrder purchaseOrder = inventoryMapper.toPurchaseOrder(dto);
 
         //set business to purchaseOrder
@@ -67,11 +69,13 @@ public class ExternalSupplierService {
         purchaseOrder.setStatus(OrderStatus.COMPLETED);
 
         //save purchaseOrder
-        return purchaseOrderRepository.save(purchaseOrder);
+        PurchaseOrder saved = purchaseOrderRepository.save(purchaseOrder);
+        log.info("Created purchase order purchaseOrderId={} for businessId={}", saved.getPurchaseOrderId(), business.getBusinessId());
+        return saved;
     }
 
     private ProductVariant getProductVariant(ProductVariantIdResponse productVariantIdResponse) {
-
+        log.debug("Loading product variant variantId={}", productVariantIdResponse.id());
         return productVariantRepository
                 .findProductVariantByVariantId(productVariantIdResponse.id())
                 .orElseThrow(() ->
@@ -80,7 +84,7 @@ public class ExternalSupplierService {
     }
 
     private void createPurchaseOrderItem(ExternalSupplierDto dto, PurchaseOrder purchaseOrder, ProductVariant variant) {
-
+        log.debug("Creating purchase order item for purchaseOrderId={}, variantId={}", purchaseOrder.getPurchaseOrderId(), variant.getVariantId());
         PurchaseOrderItem purchaseOrderItem = inventoryMapper.toPurchaseOrderItem(dto);
 
         purchaseOrderItem.setPurchaseOrder(purchaseOrder);
@@ -102,22 +106,26 @@ public class ExternalSupplierService {
                         .orElse(null);
 
         if (inventory == null) {
+            log.info("Creating inventory for businessId={}, variantId={}", business.getBusinessId(), productVariantIdResponse.id());
             inventory = inventoryMapper.toInventory(dto);
             inventory.setBusiness(business);
             inventory.setProductVariant(variant);
 
         } else {
+            log.info("Updating inventory quantity for businessId={}, variantId={}", business.getBusinessId(), productVariantIdResponse.id());
 
             inventory.setQuantity(
                     inventory.getQuantity() + dto.getQuantity()
             );
         }
 
-        return inventoryRepository.save(inventory);
+        Inventory saved = inventoryRepository.save(inventory);
+        log.debug("Saved inventory for businessId={}, variantId={}, quantity={}", business.getBusinessId(), productVariantIdResponse.id(), saved.getQuantity());
+        return saved;
     }
 
     private void createStockMovement(ExternalSupplierDto dto, Inventory inventory, PurchaseOrder purchaseOrder) {
-
+        log.debug("Creating stock movement for purchaseOrderId={}, inventoryId={}", purchaseOrder.getPurchaseOrderId(), inventory.getInventoryId());
         StockMovement stockMovement = inventoryMapper.toStockMovement(dto);
 
         stockMovement.setInventory(inventory);
@@ -134,6 +142,8 @@ public class ExternalSupplierService {
 
     @Transactional
     public void addInventoryStockByExternalSupplier(ExternalSupplierDto dto) {
+        log.info("Starting supplier stock intake for businessId={}, supplierName={}, productName={}, quantity={}",
+                dto.getToBusinessId(), dto.getSupplierName(), dto.getProductName(), dto.getQuantity());
 
         //getting product id -1
         ProductIdResponse productId = getOrCreateProduct(dto);
@@ -163,5 +173,7 @@ public class ExternalSupplierService {
 
         //   stock movement -6
         createStockMovement(dto, inventory, purchaseOrder);
+        log.info("Completed supplier stock intake for businessId={}, productId={}, variantId={}",
+                dto.getToBusinessId(), productId.productId(), productVariantIdResponse.id());
     }
 }

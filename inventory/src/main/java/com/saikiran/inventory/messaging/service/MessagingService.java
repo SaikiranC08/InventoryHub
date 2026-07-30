@@ -2,7 +2,6 @@ package com.saikiran.inventory.messaging.service;
 
 
 import com.saikiran.inventory.business.entity.Business;
-import com.saikiran.inventory.business.mapper.businessResponseMapper;
 import com.saikiran.inventory.business.service.BusinessService;
 import com.saikiran.inventory.common.config.BusinessPrincipal;
 import com.saikiran.inventory.common.exception.BusinessNotFoundException;
@@ -16,8 +15,8 @@ import com.saikiran.inventory.messaging.entity.Message;
 import com.saikiran.inventory.messaging.repository.ConversationRepository;
 import com.saikiran.inventory.messaging.repository.ConversationStateRepository;
 import com.saikiran.inventory.messaging.repository.MessageRepository;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +29,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MessagingService {
 
     private final ConversationRepository conversationRepository;
@@ -40,6 +40,7 @@ public class MessagingService {
 
 
     private void validateParticipant(Conversation conversation, Long businessId) throws AccessDeniedException {
+        log.debug("Validating participant businessId={} for conversationId={}", businessId, conversation.getId());
 
         boolean isParticipant =
                 conversation.getBusinessOne().getBusinessId().equals(businessId)
@@ -47,11 +48,13 @@ public class MessagingService {
                         conversation.getBusinessTwo().getBusinessId().equals(businessId);
 
         if (!isParticipant) {
-            throw new AccessDeniedException("You are not a participant of this conversation.");
+           log.warn("Rejected conversation access for businessId={} and conversationId={}", businessId, conversation.getId());
+           throw new AccessDeniedException("You are not a participant of this conversation.");
         }
     }
 
     private Conversation loadConversation(Long conversationId){
+         log.debug("Loading conversation conversationId={}", conversationId);
          return conversationRepository.findConversationById(conversationId)
                                              .orElseThrow(() ->
                                                      new RuntimeException("Conversation not found"));
@@ -60,6 +63,8 @@ public class MessagingService {
 
 
     public MessageResponse sendMessage(SendMessageRequest request, BusinessPrincipal principal) throws AccessDeniedException {
+        log.info("Sending message from businessId={} conversationId={} receiverBusinessId={}",
+                principal.getBusinessId(), request.getConversationId(), request.getReceiverBusinessId());
 
         Long senderBusinessId = principal.getBusinessId();
 
@@ -67,6 +72,8 @@ public class MessagingService {
 
         // First message
         if (request.getConversationId() == null) {
+            log.debug("Processing first message for senderBusinessId={} receiverBusinessId={}",
+                    senderBusinessId, request.getReceiverBusinessId());
 
             Optional<Conversation> existingConversation =
                     conversationRepository.findConversationBetweenBusinesses(
@@ -77,10 +84,14 @@ public class MessagingService {
             if (existingConversation.isPresent()) {
 
                 conversation = existingConversation.get();
+                log.info("Reusing existing conversationId={} for senderBusinessId={} receiverBusinessId={}",
+                        conversation.getId(), senderBusinessId, request.getReceiverBusinessId());
                 conversation.setLastMessage(request.getContent());
                 conversation.setLastMessageTime(request.getSentAt());
                 conversation.setLastMessageSenderId(principal.getBusinessId());
             } else {
+                log.info("Creating new conversation for senderBusinessId={} receiverBusinessId={}",
+                        senderBusinessId, request.getReceiverBusinessId());
 
                 Business sender = businessService.getBusinessInfoById(senderBusinessId)
                                                  .orElseThrow(() ->
@@ -100,6 +111,8 @@ public class MessagingService {
                                     .businessTwo(receiver)
                                     .build()
                 );
+                log.info("Created conversationId={} for senderBusinessId={} receiverBusinessId={}",
+                        conversation.getId(), senderBusinessId, request.getReceiverBusinessId());
 
                 ConversationState stateOne =
                         ConversationState.builder()
@@ -147,6 +160,8 @@ public class MessagingService {
 
 
         message = messageRepository.save(message);
+        log.info("Saved message messageId={} conversationId={} senderBusinessId={}",
+                message.getId(), conversation.getId(), senderBusinessId);
 
         MessageResponse response = MessageResponse.builder()
                                                   .messageId(message.getId())
@@ -171,11 +186,15 @@ public class MessagingService {
                 "/queue/messages",
                 response
         );
+        log.debug("Delivered messageId={} to senderBusinessId={} and receiverBusinessId={}",
+                message.getId(), sender.getBusinessId(), receiver.getBusinessId());
 
         return response;
     }
 
     public Page<MessageHistoryResponse> getConversationMessages(Long conversationId, Long businessId, int page, int size) throws AccessDeniedException {
+        log.debug("Fetching conversation messages conversationId={} businessId={} page={} size={}",
+                conversationId, businessId, page, size);
 
         //finding conversation
         Conversation conversation = loadConversation(conversationId);
@@ -187,6 +206,7 @@ public class MessagingService {
         Pageable pageable = PageRequest.of(page,size);
 
         Page<Message> messages = messageRepository.findByConversationIdOrderByCreatedAtDesc(conversationId,pageable);
+        log.debug("Found {} messages for conversationId={}", messages.getNumberOfElements(), conversationId);
 
         return messages.map(
                 message -> MessageHistoryResponse.builder()
@@ -199,8 +219,10 @@ public class MessagingService {
     }
 
     public List<ConversationSummaryResponse> getConversations(Long businessId) {
+        log.debug("Fetching conversations for businessId={}", businessId);
 
         List<Conversation> conversations = conversationRepository.findByBusinessOne_BusinessIdOrBusinessTwo_BusinessIdOrderByLastMessageTimeDesc(businessId,businessId);
+        log.debug("Found {} conversations for businessId={}", conversations.size(), businessId);
 
 
         return conversations.stream()
@@ -243,6 +265,8 @@ public class MessagingService {
     }
 
     public void markConversationAsRead(Long conversationId,Long businessId, Long lastReadMessageId) throws AccessDeniedException {
+        log.info("Marking conversation as read conversationId={} businessId={} lastReadMessageId={}",
+                conversationId, businessId, lastReadMessageId);
 
         Conversation conversation = loadConversation(conversationId);
 
@@ -256,12 +280,16 @@ public class MessagingService {
 
         if (previousMessage != null &&
                 lastReadMessageId < previousMessage.getId()) {
+            log.warn("Rejected backwards read position for conversationId={} businessId={} previousMessageId={} requestedMessageId={}",
+                    conversationId, businessId, previousMessage.getId(), lastReadMessageId);
             throw new IllegalArgumentException(
                     "Cannot move read position backwards.");
         }
 
         if (previousMessage != null &&
                 previousMessage.getId().equals(lastReadMessageId)) {
+            log.debug("Conversation already marked read conversationId={} businessId={} messageId={}",
+                    conversationId, businessId, lastReadMessageId);
             return;
         }
 
@@ -270,6 +298,7 @@ public class MessagingService {
                                                    "Message not found with id: " + lastReadMessageId));
 
         if (!message.getConversation().getId().equals(conversationId)) {
+            log.warn("Rejected read update for mismatched message conversationId={} messageId={}", conversationId, lastReadMessageId);
             throw new IllegalArgumentException(
                     "Message does not belong to this conversation.");
         }
@@ -277,5 +306,7 @@ public class MessagingService {
         state.setLastReadMessage(message);
 
         conversationStateRepository.save(state);
+        log.info("Updated read position conversationId={} businessId={} lastReadMessageId={}",
+                conversationId, businessId, lastReadMessageId);
     }
 }

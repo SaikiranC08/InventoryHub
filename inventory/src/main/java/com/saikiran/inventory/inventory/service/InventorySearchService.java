@@ -5,21 +5,27 @@ import com.saikiran.inventory.inventory.dto.SearchProductResponse;
 import com.saikiran.inventory.inventory.repository.InventoryRepository;
 import com.saikiran.inventory.product.service.ProductService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class InventorySearchService {
     private final ProductService productService;
     private final InventoryRepository inventoryRepository;
 
 
     public List<SearchProductResponse> getBusinessInfoForSearchQuery(String name){
+        log.debug("Searching inventory for query={}", name);
 
         Long productId = productService.getProductIdForSearchQuery(name);
+        log.debug("Resolved productId={} for query={}", productId, name);
 
-        return  inventoryRepository.findAvailableBusinessesByProductId(productId);
+        List<SearchProductResponse> results = inventoryRepository.findAvailableBusinessesByProductId(productId);
+        log.debug("Found {} inventory search results for query={}", results.size(), name);
+        return results;
     }
 }

@@ -12,6 +12,7 @@ import com.saikiran.inventory.product.repository.ProductVariantRepository;
 import com.saikiran.inventory.product.repository.categoryRepository;
 import com.saikiran.inventory.product.repository.productRepository;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class ProductService {
 
     private final productRepository productRepository;
@@ -55,12 +57,14 @@ public class ProductService {
 
 
     public ProductIdResponse getOrCreateProductId(ProductIdRequest dto) {
+        log.info("Resolving product id for productName={}, categoryId={}", dto.getProductName(), dto.getCategoryId());
         //get normalized string
         String name = normalized(dto.getProductName());
 
         //db search or create product id
         Product product = productRepository.findProductByNormalizedName(name)
                 .orElseGet(() -> {
+                    log.info("Creating product for normalizedName={}, categoryId={}", name, dto.getCategoryId());
 
                     Category category = categoryRepository.findById(dto.getCategoryId())
                                                           .orElseThrow(() ->
@@ -75,31 +79,38 @@ public class ProductService {
                      return productRepository.save(p);
                 });
 
+        log.debug("Resolved productId={} for normalizedName={}", product.getProductId(), name);
         return new ProductIdResponse(product.getProductId());
     }
 
     public Long getProductIdForSearchQuery(String name){
         String normalizedName = normalized(name);
+        log.debug("Resolving product id for search query={}, normalizedName={}", name, normalizedName);
 
         Optional<Product> product = Optional.ofNullable(productRepository.findProductByNormalizedName(normalizedName)
-                                                                           .orElseThrow(() -> new RuntimeException("product not found with existence business store or warehouse")));
+                                                                          .orElseThrow(() -> new RuntimeException("product not found with existence business store or warehouse")));
+        log.debug("Resolved productId={} for search query={}", product.get().getProductId(), name);
         return product.get()
-                      .getProductId();
+                     .getProductId();
     }
 
 
     //variant id request
 
     public ProductVariantIdResponse getOrCreateProductVariantId(ProductVariantIdRequest dto){
+        log.info("Resolving product variant id for productId={}, sku={}", dto.getProductId(), dto.getSku());
 
         Product p2 = productRepository.findByProductId(dto.getProductId())
                                       .orElseThrow(()-> new RuntimeException("product not found"));
 
         String signature = generateVariantSignature(dto.getAttributes());
+        log.debug("Generated variant signature for productId={} with attributeCount={}", dto.getProductId(),
+                dto.getAttributes() == null ? 0 : dto.getAttributes().size());
 
         ProductVariant productVariant = productVariantRepository.findByProductProductIdAndVariantSignature(dto.getProductId(), signature)
                 .orElseGet(
                         ()->{
+                            log.info("Creating product variant for productId={}, sku={}", dto.getProductId(), dto.getSku());
 
                             ProductVariant variant = new ProductVariant();
                             variant.setProduct(p2);
@@ -113,6 +124,7 @@ public class ProductService {
                             return productVariantRepository.save(variant);
                         });
 
+        log.debug("Resolved variantId={} for productId={}", productVariant.getVariantId(), dto.getProductId());
         return new ProductVariantIdResponse(productVariant.getVariantId());
 
     }
