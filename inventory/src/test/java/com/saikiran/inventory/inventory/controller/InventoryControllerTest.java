@@ -5,7 +5,11 @@ package com.saikiran.inventory.inventory.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saikiran.inventory.business.service.BusinessService;
 import com.saikiran.inventory.inventory.dto.ExternalSupplierDto;
+import com.saikiran.inventory.inventory.service.ExternalBuyerService;
 import com.saikiran.inventory.inventory.service.ExternalSupplierService;
+import com.saikiran.inventory.inventory.service.InventorySearchService;
+import com.saikiran.inventory.inventory.service.StockRequestService;
+import com.saikiran.inventory.inventory.service.StockTransferService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -39,6 +43,18 @@ class InventoryControllerTest {
 
     @MockitoBean
     private BusinessService businessService;
+
+    @MockitoBean
+    private ExternalBuyerService externalBuyerService;
+
+    @MockitoBean
+    private StockTransferService stockTransferService;
+
+    @MockitoBean
+    private StockRequestService stockRequestService;
+
+    @MockitoBean
+    private InventorySearchService inventorySearchService;
 
     @Test
     void shouldAddInventoryStockWhenExternalSupplierProvidesStock() throws Exception {
