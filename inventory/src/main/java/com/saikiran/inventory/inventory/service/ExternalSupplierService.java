@@ -3,6 +3,7 @@ package com.saikiran.inventory.inventory.service;
 
 import com.saikiran.inventory.business.entity.Business;
 import com.saikiran.inventory.business.repository.BusinessRepository;
+import com.saikiran.inventory.common.exception.BusinessNotFoundException;
 import com.saikiran.inventory.inventory.dto.ExternalSupplierDto;
 import com.saikiran.inventory.inventory.entities.Inventory;
 import com.saikiran.inventory.inventory.entities.external.PurchaseOrder;
@@ -18,6 +19,7 @@ import com.saikiran.inventory.inventory.repository.PurchaseOrderRepository;
 import com.saikiran.inventory.inventory.repository.StockMovementRepository;
 import com.saikiran.inventory.product.dto.response.ProductIdResponse;
 import com.saikiran.inventory.product.dto.response.ProductVariantIdResponse;
+import com.saikiran.inventory.common.exception.ProductVariantNotFoundException;
 import com.saikiran.inventory.product.entities.ProductVariant;
 import com.saikiran.inventory.product.repository.ProductVariantRepository;
 import com.saikiran.inventory.product.repository.productRepository;
@@ -57,7 +59,7 @@ public class ExternalSupplierService {
         log.debug("Loading target business for businessId={}", dto.getToBusinessId());
         return businessRepository.findBusinessByBusinessId(dto.getToBusinessId())
                                  .orElseThrow(() ->
-                                         new RuntimeException(" business not found"));
+                                         new BusinessNotFoundException(" business not found"));
     }
 
     private PurchaseOrder createPurchaseOrder(ExternalSupplierDto dto, Business business) {
@@ -79,8 +81,7 @@ public class ExternalSupplierService {
         return productVariantRepository
                 .findProductVariantByVariantId(productVariantIdResponse.id())
                 .orElseThrow(() ->
-                        new RuntimeException(
-                                "Product variant Order not found"));
+                        new ProductVariantNotFoundException("Product variant Order not found"));
     }
 
     private void createPurchaseOrderItem(ExternalSupplierDto dto, PurchaseOrder purchaseOrder, ProductVariant variant) {

@@ -8,6 +8,9 @@ import com.saikiran.inventory.product.dto.response.ProductVariantIdResponse;
 import com.saikiran.inventory.product.entities.Category;
 import com.saikiran.inventory.product.entities.Product;
 import com.saikiran.inventory.product.entities.ProductVariant;
+import com.saikiran.inventory.common.exception.CategoryNotFoundException;
+import com.saikiran.inventory.common.exception.ProductNotFoundException;
+import com.saikiran.inventory.common.exception.ProductVariantNotFoundException;
 import com.saikiran.inventory.product.repository.ProductVariantRepository;
 import com.saikiran.inventory.product.repository.categoryRepository;
 import com.saikiran.inventory.product.repository.productRepository;
@@ -68,7 +71,7 @@ public class ProductService {
 
                     Category category = categoryRepository.findById(dto.getCategoryId())
                                                           .orElseThrow(() ->
-                                                                  new RuntimeException("Category not found"));
+                                                                  new CategoryNotFoundException("Category not found"));
 
                     Product p = new Product();
                     p.setProductName(dto.getProductName());
@@ -88,7 +91,7 @@ public class ProductService {
         log.debug("Resolving product id for search query={}, normalizedName={}", name, normalizedName);
 
         Optional<Product> product = Optional.ofNullable(productRepository.findProductByNormalizedName(normalizedName)
-                                                                          .orElseThrow(() -> new RuntimeException("product not found with existence business store or warehouse")));
+                                                                          .orElseThrow(() -> new ProductNotFoundException("product not found with existence business store or warehouse")));
         log.debug("Resolved productId={} for search query={}", product.get().getProductId(), name);
         return product.get()
                      .getProductId();
@@ -101,7 +104,7 @@ public class ProductService {
         log.info("Resolving product variant id for productId={}, sku={}", dto.getProductId(), dto.getSku());
 
         Product p2 = productRepository.findByProductId(dto.getProductId())
-                                      .orElseThrow(()-> new RuntimeException("product not found"));
+                                      .orElseThrow(()-> new ProductNotFoundException("product not found"));
 
         String signature = generateVariantSignature(dto.getAttributes());
         log.debug("Generated variant signature for productId={} with attributeCount={}", dto.getProductId(),

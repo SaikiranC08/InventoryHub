@@ -3,6 +3,10 @@ package com.saikiran.inventory.inventory.service;
 
 import com.saikiran.inventory.business.entity.Business;
 import com.saikiran.inventory.business.repository.BusinessRepository;
+import com.saikiran.inventory.common.exception.BusinessNotFoundException;
+import com.saikiran.inventory.common.exception.InvalidBusinessOperationException;
+import com.saikiran.inventory.common.exception.InventoryNotFoundException;
+import com.saikiran.inventory.common.exception.ProductVariantNotFoundException;
 import com.saikiran.inventory.inventory.dto.StockTransferDto;
 import com.saikiran.inventory.inventory.entities.Inventory;
 import com.saikiran.inventory.inventory.entities.external.StockMovement;
@@ -38,13 +42,13 @@ public class StockTransferService {
     private Business getBusinessInfo(Long id){
         log.debug("Loading business for businessId={}", id);
         return businessRepository.findBusinessByBusinessId(id)
-                .orElseThrow(()-> new RuntimeException("business not found"));
+                .orElseThrow(()-> new BusinessNotFoundException("business not found"));
     }
 
     private ProductVariant getProductVariant(Long id){
         log.debug("Loading product variant for variantId={}", id);
         return productVariantRepository.findProductVariantByVariantId(id)
-                                       .orElseThrow(()-> new RuntimeException("business not found"));
+                                       .orElseThrow(()-> new ProductVariantNotFoundException("business not found"));
     }
 
     //increment the stock
@@ -78,7 +82,7 @@ public class StockTransferService {
         log.debug("Updating source inventory for businessId={}, variantId={}, quantity={}",
                 dto.getFromBusinessId(), dto.getProductVariantId(), dto.getQuantity());
         Inventory inventory = inventoryRepository.findInventoryByBusiness_BusinessIdAndProductVariant_VariantId(dto.getFromBusinessId(), dto.getProductVariantId())
-                .orElseThrow(()->new RuntimeException("inventory not found"));
+                .orElseThrow(()->new InventoryNotFoundException("Inventory not found"));
 
         if(inventory.getQuantity() >= dto.getQuantity()){
             inventory.setQuantity(inventory.getQuantity() - dto.getQuantity());
@@ -86,7 +90,7 @@ public class StockTransferService {
         else{
             log.warn("Insufficient stock for transfer from businessId={}, variantId={}, available={}, requested={}",
                     dto.getFromBusinessId(), dto.getProductVariantId(), inventory.getQuantity(), dto.getQuantity());
-            throw new RuntimeException("stock are less than sale");
+            throw new InvalidBusinessOperationException("stock are less than sale");
         }
         Inventory saved = inventoryRepository.save(inventory);
         log.debug("Updated source inventory for businessId={}, variantId={}, quantity={}",
@@ -147,14 +151,14 @@ public class StockTransferService {
 
         if(dto.getFromBusinessId().equals(dto.getToBusinessId())){
             log.warn("Rejected stock transfer to same businessId={}", dto.getFromBusinessId());
-            throw new RuntimeException(
+            throw new InvalidBusinessOperationException(
                     "Cannot transfer to same business"
             );
         }
         if(dto.getQuantity() <= 0){
             log.warn("Rejected stock transfer with non-positive quantity fromBusinessId={}, quantity={}",
                     dto.getFromBusinessId(), dto.getQuantity());
-            throw new RuntimeException(
+            throw new InvalidBusinessOperationException(
                     "Quantity must be greater than zero"
             );
         }

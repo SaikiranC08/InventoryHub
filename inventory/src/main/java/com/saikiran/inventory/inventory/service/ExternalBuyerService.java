@@ -2,6 +2,10 @@ package com.saikiran.inventory.inventory.service;
 
 import com.saikiran.inventory.business.entity.Business;
 import com.saikiran.inventory.business.repository.BusinessRepository;
+import com.saikiran.inventory.common.exception.BusinessNotFoundException;
+import com.saikiran.inventory.common.exception.InvalidBusinessOperationException;
+import com.saikiran.inventory.common.exception.InventoryNotFoundException;
+import com.saikiran.inventory.common.exception.ProductVariantNotFoundException;
 import com.saikiran.inventory.inventory.dto.ExternalBuyerDto;
 import com.saikiran.inventory.inventory.entities.Inventory;
 import com.saikiran.inventory.inventory.entities.external.SalesOrder;
@@ -44,7 +48,7 @@ public class ExternalBuyerService {
         log.debug("Loading product variant for businessId={}, variantId={}", dto.getBusinessId(), dto.getVariantId());
         return productVariantRepository.findProductVariantByVariantId(dto.getVariantId())
                                        .orElseThrow(()->
-                                               new RuntimeException("product variant not found"));
+                                               new ProductVariantNotFoundException("product variant not found"));
     }
 
 
@@ -52,7 +56,7 @@ public class ExternalBuyerService {
         log.debug("Loading business for businessId={}", dto.getBusinessId());
         return businessRepository.findBusinessByBusinessId(dto.getBusinessId())
                                  .orElseThrow(() ->
-                                         new RuntimeException(" business not found"));
+                                         new BusinessNotFoundException(" business not found"));
     }
 
     private SalesOrder getSalesOrder(ExternalBuyerDto dto,Business business){
@@ -78,14 +82,14 @@ public class ExternalBuyerService {
         log.debug("Updating inventory for businessId={}, variantId={}, quantity={}", business.getBusinessId(), productVariant.getVariantId(), dto.getQuantity());
         Inventory inventory = inventoryRepository.findInventoryByBusiness_BusinessIdAndProductVariant_VariantId(business.getBusinessId(),productVariant.getVariantId())
                 .orElseThrow(()->
-                        new RuntimeException("inventory not found"));
+                        new InventoryNotFoundException("inventory not found"));
 
         Inventory inventory1 = inventoryMapper.toInventory(dto);
 
         if(inventory.getQuantity() < dto.getQuantity()){
             log.warn("Insufficient stock for businessId={}, variantId={}, available={}, requested={}",
                     business.getBusinessId(), productVariant.getVariantId(), inventory.getQuantity(), dto.getQuantity());
-            throw new RuntimeException(
+            throw new InvalidBusinessOperationException(
                     "Insufficient stock"
             );
         }
@@ -120,7 +124,7 @@ public class ExternalBuyerService {
         ProductVariant variant = getProductVariant(dto);
         Business business = getBusiness(dto);
         SalesOrder salesOrder = getSalesOrder(dto,business);
-        SalesOrderItem salesOrderItem = getSalesOrderItem(dto,variant,salesOrder);
+        getSalesOrderItem(dto,variant,salesOrder);
         Inventory inventory = updateInventory(dto,business,variant);
         createStockMovement(dto,inventory,salesOrder);
         log.info("Completed buyer stock sale for businessId={}, variantId={}, salesOrderId={}",

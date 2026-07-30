@@ -7,6 +7,7 @@ import com.saikiran.inventory.business.entity.Business;
 import com.saikiran.inventory.business.mapper.businessResponseMapper;
 import com.saikiran.inventory.business.repository.BusinessRepository;
 import com.saikiran.inventory.common.exception.BusinessNotFoundException;
+import com.saikiran.inventory.common.exception.MissingRequiredIdentifierException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -36,7 +37,7 @@ public class BusinessService {
     public List<BusinessResponseDto> getBusinessInfoByOwnerId(Long id){
         if(id == null){
             log.warn("Business lookup requested without ownerId");
-            throw new RuntimeException("send ownerId");
+            throw new MissingRequiredIdentifierException("send ownerId");
         }
         log.debug("Fetching businesses for ownerId={}", id);
        List<Business> info = businessRepository.findByOwnerId(id);
@@ -48,7 +49,7 @@ public class BusinessService {
     public Optional<Business> getBusinessInfoById(Long id){
         if(id == null){
             log.warn("Business lookup requested without businessId");
-            throw new RuntimeException("send ownerId");
+            throw new MissingRequiredIdentifierException("send ownerId");
         }
         log.debug("Fetching business by businessId={}", id);
         return businessRepository.findBusinessByBusinessId(id);

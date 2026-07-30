@@ -19,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.web.bind.annotation.*;
 
-import java.nio.file.AccessDeniedException;
 import java.security.Principal;
 import java.util.List;
 
@@ -36,7 +35,7 @@ public class MessagingController {
 
 
     @MessageMapping("/chat.send")
-    public MessageResponse receiveMessage(SendMessageRequest request, Principal principal) throws AccessDeniedException {
+    public MessageResponse receiveMessage(SendMessageRequest request, Principal principal) {
         return messagingService.sendMessage(request,(BusinessPrincipal) principal);
     }
 
@@ -55,7 +54,7 @@ public class MessagingController {
             @RequestParam(defaultValue = "20")
             @Parameter(description = "Page size", example = "20")
             int size
-    ) throws AccessDeniedException {
+    ) {
 
         Long businessId =  businessService.getBusinessIdForUser(userId);
 
@@ -84,7 +83,7 @@ public class MessagingController {
             @RequestHeader("X-User-Id")
             @Parameter(description = "Authenticated user id", required = true, example = "1")
             Long userId,
-            @Valid @RequestBody ReadConversationRequest request) throws AccessDeniedException {
+            @Valid @RequestBody ReadConversationRequest request) {
 
         Long businessId = businessService.getBusinessIdForUser(userId);
 

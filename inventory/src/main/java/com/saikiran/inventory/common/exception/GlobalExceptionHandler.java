@@ -15,20 +15,33 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(BusinessNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleBusinessNotFound(
-            BusinessNotFoundException ex) {
+    @ExceptionHandler({
+            BusinessNotFoundException.class,
+            CategoryNotFoundException.class,
+            ProductNotFoundException.class,
+            ProductVariantNotFoundException.class,
+            InventoryNotFoundException.class,
+            StockRequestNotFoundException.class,
+            ConversationNotFoundException.class,
+            ConversationStateNotFoundException.class,
+            MessageNotFoundException.class
+    })
+    public ResponseEntity<ErrorResponse> handleNotFound(RuntimeException ex) {
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
 
-        ErrorResponse error =
-                new ErrorResponse(
-                        ex.getMessage(),
-                        404,
-                        LocalDateTime.now()
-                );
+    @ExceptionHandler({
+            MissingRequiredIdentifierException.class,
+            InvalidBusinessOperationException.class,
+            IllegalArgumentException.class
+    })
+    public ResponseEntity<ErrorResponse> handleBadRequest(RuntimeException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
 
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(error);
+    @ExceptionHandler(ConversationAccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(ConversationAccessDeniedException ex) {
+        return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -51,5 +64,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .badRequest()
                 .body(errors);
+    }
+
+    private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String message) {
+        return ResponseEntity
+                .status(status)
+                .body(new ErrorResponse(message, status.value(), LocalDateTime.now()));
     }
 }

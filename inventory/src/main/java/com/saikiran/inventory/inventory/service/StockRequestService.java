@@ -2,6 +2,10 @@ package com.saikiran.inventory.inventory.service;
 
 import com.saikiran.inventory.business.entity.Business;
 import com.saikiran.inventory.business.repository.BusinessRepository;
+import com.saikiran.inventory.common.exception.BusinessNotFoundException;
+import com.saikiran.inventory.common.exception.InvalidBusinessOperationException;
+import com.saikiran.inventory.common.exception.ProductVariantNotFoundException;
+import com.saikiran.inventory.common.exception.StockRequestNotFoundException;
 import com.saikiran.inventory.inventory.dto.StockRequestDto;
 import com.saikiran.inventory.inventory.dto.StockRequestResponse;
 import com.saikiran.inventory.inventory.dto.StockTransferDto;
@@ -33,13 +37,13 @@ public class StockRequestService {
     private Business getBusinessInfo(Long id){
         log.debug("Loading business for businessId={}", id);
         return businessRepository.findBusinessByBusinessId(id)
-                                 .orElseThrow(()-> new RuntimeException("business not found"));
+                                 .orElseThrow(()-> new BusinessNotFoundException("business not found"));
     }
 
     private ProductVariant getProductVariant(Long id){
         log.debug("Loading product variant for variantId={}", id);
         return productVariantRepository.findProductVariantByVariantId(id)
-                                       .orElseThrow(()-> new RuntimeException("business not found"));
+                                       .orElseThrow(()-> new ProductVariantNotFoundException("business not found"));
     }
 
 
@@ -63,7 +67,7 @@ public class StockRequestService {
 
         if (stockRequestList.isEmpty()){
             log.warn("No pending stock requests found for businessId={}", businessId);
-            throw new RuntimeException("No pending requests found");
+            throw new InvalidBusinessOperationException("No pending requests found");
         }
         log.debug("Found {} pending stock requests for businessId={}", stockRequestList.size(), businessId);
 
@@ -80,18 +84,18 @@ public class StockRequestService {
 
         //validating the authorized user approving or rejecting
         StockRequest stockRequest = stockRequestRepository.findByStockRequestId(requestId)
-                .orElseThrow(()-> new RuntimeException("stock request not found"));
+                .orElseThrow(()-> new StockRequestNotFoundException("stock request not found"));
 
         if(stockRequest.getStatus() != StockRequestStatus.PENDING){
             log.warn("Rejected stock request update because requestId={} is already processed", requestId);
-            throw new RuntimeException(
+            throw new InvalidBusinessOperationException(
                     "Request already processed"
             );
         }
 
         if(!stockRequest.getToBusiness().getBusinessId().equals(businessId)){
             log.warn("Rejected stock request update because businessId={} is not authorized for requestId={}", businessId, requestId);
-            throw new RuntimeException(
+            throw new InvalidBusinessOperationException(
                     "You are not authorized to process this request."
             );
         }
