@@ -9,21 +9,24 @@ import com.saikiran.inventory.messaging.dto.response.ConversationSummaryResponse
 import com.saikiran.inventory.messaging.dto.response.MessageHistoryResponse;
 import com.saikiran.inventory.messaging.dto.response.MessageResponse;
 import com.saikiran.inventory.messaging.service.MessagingService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.AccessDeniedException;
 import java.security.Principal;
 import java.util.List;
 
-@Controller
+@RestController
 @RequestMapping("/api/v1/conversations")
 @RequiredArgsConstructor
+@Tag(name = "Conversations", description = "Messaging and conversation APIs")
 public class MessagingController {
 
     private final MessagingService messagingService;
@@ -37,12 +40,21 @@ public class MessagingController {
         return messagingService.sendMessage(request,(BusinessPrincipal) principal);
     }
 
-    @MessageMapping("/{conversationId}/messages")
+    @GetMapping("/{conversationId}/messages")
+    @Operation(summary = "Get conversation messages", description = "Returns paginated messages for a conversation.")
     public ResponseEntity<Page<MessageHistoryResponse>> getMessages(
-            @PathVariable Long conversationId,
-            @RequestHeader("X-User-Id") Long userId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
+            @PathVariable
+            @Parameter(description = "Conversation id", required = true, example = "50")
+            Long conversationId,
+            @RequestHeader("X-User-Id")
+            @Parameter(description = "Authenticated user id", required = true, example = "1")
+            Long userId,
+            @RequestParam(defaultValue = "0")
+            @Parameter(description = "Page index", example = "0")
+            int page,
+            @RequestParam(defaultValue = "20")
+            @Parameter(description = "Page size", example = "20")
+            int size
     ) throws AccessDeniedException {
 
         Long businessId =  businessService.getBusinessIdForUser(userId);
@@ -52,8 +64,11 @@ public class MessagingController {
     }
 
     @GetMapping
+    @Operation(summary = "List conversations", description = "Returns conversation summaries for the authenticated business.")
     public List<ConversationSummaryResponse> getConversations(
-            @RequestHeader("X-User-Id") Long userId) {
+            @RequestHeader("X-User-Id")
+            @Parameter(description = "Authenticated user id", required = true, example = "1")
+            Long userId) {
 
         Long businessId = businessService.getBusinessIdForUser(userId);
 
@@ -61,9 +76,14 @@ public class MessagingController {
     }
 
     @PatchMapping("/{conversationId}/read")
+    @Operation(summary = "Mark conversation as read", description = "Marks messages up to the provided id as read.")
     public ResponseEntity<Void> markConversationAsRead(
-            @PathVariable Long conversationId,
-            @RequestHeader("X-User-Id") Long userId,
+            @PathVariable
+            @Parameter(description = "Conversation id", required = true, example = "50")
+            Long conversationId,
+            @RequestHeader("X-User-Id")
+            @Parameter(description = "Authenticated user id", required = true, example = "1")
+            Long userId,
             @Valid @RequestBody ReadConversationRequest request) throws AccessDeniedException {
 
         Long businessId = businessService.getBusinessIdForUser(userId);

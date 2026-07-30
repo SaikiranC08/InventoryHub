@@ -4,8 +4,10 @@ import com.saikiran.inventory.business.service.BusinessService;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Map;
 
@@ -28,6 +30,8 @@ public class BusinessHandshakeInterceptor implements HandshakeInterceptor {
         String userId =  request.getHeaders().getFirst("X-User-Id");
         assert userId != null;
         Long id = Long.parseLong(userId);
+
+
 
         Long businessId = businessService.getBusinessIdForUser(id);
 

@@ -5,6 +5,9 @@ import com.saikiran.inventory.business.service.BusinessService;
 import com.saikiran.inventory.inventory.dto.*;
 import com.saikiran.inventory.inventory.enums.StockRequestStatus;
 import com.saikiran.inventory.inventory.service.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +17,7 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/v1/inventory")
+@Tag(name = "Inventory", description = "Stock movement and inventory search APIs")
 public class InventoryController {
 
     private final ExternalSupplierService externalSupplierService;
@@ -24,7 +28,12 @@ public class InventoryController {
     private final InventorySearchService searchService;
 
     @PostMapping("/external-supplier")
-    public ResponseEntity<String> addInventoryStockByExternalSupplier(@RequestBody ExternalSupplierDto dto,@RequestHeader("X-User-Id") Long userId ) {
+    @Operation(summary = "Add stock from supplier", description = "Creates inventory from an external supplier transaction.")
+    public ResponseEntity<String> addInventoryStockByExternalSupplier(
+            @RequestBody ExternalSupplierDto dto,
+            @RequestHeader("X-User-Id")
+            @Parameter(description = "Authenticated user id", required = true, example = "1")
+            Long userId ) {
 
         Long businessId = businessService.getBusinessIdForUser(userId);
         dto.setToBusinessId(businessId);
@@ -34,7 +43,12 @@ public class InventoryController {
     }
 
     @PostMapping("/external-buyer")
-    public ResponseEntity<String> updateInventoryStockForExternalBuyer(@RequestBody ExternalBuyerDto dto,@RequestHeader("X-User-Id") Long userId){
+    @Operation(summary = "Sell stock to buyer", description = "Updates inventory after selling stock to an external buyer.")
+    public ResponseEntity<String> updateInventoryStockForExternalBuyer(
+            @RequestBody ExternalBuyerDto dto,
+            @RequestHeader("X-User-Id")
+            @Parameter(description = "Authenticated user id", required = true, example = "1")
+            Long userId){
 
         Long businessId = businessService.getBusinessIdForUser(userId);
         dto.setBusinessId(businessId);
@@ -46,7 +60,12 @@ public class InventoryController {
     }
 
     @PostMapping("/stock-transfer")
-    public ResponseEntity<String> addStockTransfer(@RequestBody StockTransferDto dto,@RequestHeader("X-User-Id") Long userId){
+    @Operation(summary = "Transfer stock", description = "Transfers stock from the authenticated business to another business.")
+    public ResponseEntity<String> addStockTransfer(
+            @RequestBody StockTransferDto dto,
+            @RequestHeader("X-User-Id")
+            @Parameter(description = "Authenticated user id", required = true, example = "1")
+            Long userId){
 
         Long businessId = businessService.getBusinessIdForUser(userId);
         dto.setFromBusinessId(businessId);
@@ -58,7 +77,12 @@ public class InventoryController {
     }
 
     @PostMapping("/stock-requests")
-    public ResponseEntity<String> stockRequest(@RequestBody StockRequestDto dto,@RequestHeader("X-User-Id") Long userId){
+    @Operation(summary = "Create a stock request", description = "Requests stock from another business.")
+    public ResponseEntity<String> stockRequest(
+            @RequestBody StockRequestDto dto,
+            @RequestHeader("X-User-Id")
+            @Parameter(description = "Authenticated user id", required = true, example = "1")
+            Long userId){
         Long businessId = businessService.getBusinessIdForUser(userId);
         dto.setFromBusinessId(businessId);
         stockRequestService.stockRequest(dto);
@@ -67,14 +91,28 @@ public class InventoryController {
     }
 
     @GetMapping("/stock-requests")
-    public ResponseEntity<List<StockRequestResponse>> stockRequestList(@RequestHeader("X-User-Id") Long userId){
+    @Operation(summary = "List stock requests", description = "Returns stock requests for the authenticated business.")
+    public ResponseEntity<List<StockRequestResponse>> stockRequestList(
+            @RequestHeader("X-User-Id")
+            @Parameter(description = "Authenticated user id", required = true, example = "1")
+            Long userId){
 
         Long businessId = businessService.getBusinessIdForUser(userId);
         return ResponseEntity.ok(stockRequestService.getStockRequestInfo(businessId));
     }
 
     @PutMapping("/stock-requests/{requestId}")
-    public ResponseEntity<String> updateRequest(@RequestHeader("X-User-Id") Long userId,@PathVariable Long requestId, StockRequestStatus status){
+    @Operation(summary = "Update stock request", description = "Updates the status of a stock request.")
+    public ResponseEntity<String> updateRequest(
+            @RequestHeader("X-User-Id")
+            @Parameter(description = "Authenticated user id", required = true, example = "1")
+            Long userId,
+            @PathVariable
+            @Parameter(description = "Stock request id", required = true, example = "100")
+            Long requestId,
+            @RequestParam
+            @Parameter(description = "New request status", required = true)
+            StockRequestStatus status){
 
         Long businessId = businessService.getBusinessIdForUser(userId);
         stockRequestService.updateStockRequest(businessId,requestId,status);
@@ -84,8 +122,11 @@ public class InventoryController {
 
     //searching product
     @GetMapping("/search")
+    @Operation(summary = "Search products", description = "Searches products across businesses.")
     public ResponseEntity<List<SearchProductResponse>> searchProducts(
-            @RequestParam String query){
+            @RequestParam
+            @Parameter(description = "Search query", required = true, example = "rice")
+            String query){
 
         return ResponseEntity.ok(
                 searchService.getBusinessInfoForSearchQuery(query)
