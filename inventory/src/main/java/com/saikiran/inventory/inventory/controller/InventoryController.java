@@ -31,11 +31,13 @@ public class InventoryController {
     @Operation(summary = "Add stock from supplier", description = "Creates inventory from an external supplier transaction.")
     public ResponseEntity<String> addInventoryStockByExternalSupplier(
             @RequestBody ExternalSupplierDto dto,
+            @RequestHeader("X-Business-Id")
+            @Parameter(description = "Active business id", required = true, example = "10")
+            Long businessId,
             @RequestHeader("X-User-Id")
             @Parameter(description = "Authenticated user id", required = true, example = "1")
             Long userId ) {
 
-        Long businessId = businessService.getBusinessIdForUser(userId);
         dto.setToBusinessId(businessId);
         externalSupplierService.addInventoryStockByExternalSupplier(dto);
 
@@ -46,11 +48,13 @@ public class InventoryController {
     @Operation(summary = "Sell stock to buyer", description = "Updates inventory after selling stock to an external buyer.")
     public ResponseEntity<String> updateInventoryStockForExternalBuyer(
             @RequestBody ExternalBuyerDto dto,
+            @RequestHeader("X-Business-Id")
+            @Parameter(description = "Active business id", required = true, example = "10")
+            Long businessId,
             @RequestHeader("X-User-Id")
             @Parameter(description = "Authenticated user id", required = true, example = "1")
             Long userId){
 
-        Long businessId = businessService.getBusinessIdForUser(userId);
         dto.setBusinessId(businessId);
         externalBuyerService.updateInventoryStockForExternalBuyer(dto);
 
@@ -63,11 +67,13 @@ public class InventoryController {
     @Operation(summary = "Transfer stock", description = "Transfers stock from the authenticated business to another business.")
     public ResponseEntity<String> addStockTransfer(
             @RequestBody StockTransferDto dto,
+            @RequestHeader("X-Business-Id")
+            @Parameter(description = "Active business id", required = true, example = "10")
+            Long businessId,
             @RequestHeader("X-User-Id")
             @Parameter(description = "Authenticated user id", required = true, example = "1")
             Long userId){
 
-        Long businessId = businessService.getBusinessIdForUser(userId);
         dto.setFromBusinessId(businessId);
         stockTransferService.addStockTransferInventory(dto);
 
@@ -80,10 +86,12 @@ public class InventoryController {
     @Operation(summary = "Create a stock request", description = "Requests stock from another business.")
     public ResponseEntity<String> stockRequest(
             @RequestBody StockRequestDto dto,
+            @RequestHeader("X-Business-Id")
+            @Parameter(description = "Active business id", required = true, example = "10")
+            Long businessId,
             @RequestHeader("X-User-Id")
             @Parameter(description = "Authenticated user id", required = true, example = "1")
             Long userId){
-        Long businessId = businessService.getBusinessIdForUser(userId);
         dto.setFromBusinessId(businessId);
         stockRequestService.stockRequest(dto);
 
@@ -93,17 +101,22 @@ public class InventoryController {
     @GetMapping("/stock-requests")
     @Operation(summary = "List stock requests", description = "Returns stock requests for the authenticated business.")
     public ResponseEntity<List<StockRequestResponse>> stockRequestList(
+            @RequestHeader("X-Business-Id")
+            @Parameter(description = "Active business id", required = true, example = "10")
+            Long businessId,
             @RequestHeader("X-User-Id")
             @Parameter(description = "Authenticated user id", required = true, example = "1")
             Long userId){
 
-        Long businessId = businessService.getBusinessIdForUser(userId);
         return ResponseEntity.ok(stockRequestService.getStockRequestInfo(businessId));
     }
 
     @PutMapping("/stock-requests/{requestId}")
     @Operation(summary = "Update stock request", description = "Updates the status of a stock request.")
     public ResponseEntity<String> updateRequest(
+            @RequestHeader("X-Business-Id")
+            @Parameter(description = "Active business id", required = true, example = "10")
+            Long businessId,
             @RequestHeader("X-User-Id")
             @Parameter(description = "Authenticated user id", required = true, example = "1")
             Long userId,
@@ -114,7 +127,6 @@ public class InventoryController {
             @Parameter(description = "New request status", required = true)
             StockRequestStatus status){
 
-        Long businessId = businessService.getBusinessIdForUser(userId);
         stockRequestService.updateStockRequest(businessId,requestId,status);
         return ResponseEntity.ok("updated the stock request");
     }

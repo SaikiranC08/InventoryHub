@@ -45,6 +45,9 @@ public class MessagingController {
             @PathVariable
             @Parameter(description = "Conversation id", required = true, example = "50")
             Long conversationId,
+            @RequestHeader("X-Business-Id")
+            @Parameter(description = "Active business id", required = true, example = "10")
+            Long businessId,
             @RequestHeader("X-User-Id")
             @Parameter(description = "Authenticated user id", required = true, example = "1")
             Long userId,
@@ -56,8 +59,6 @@ public class MessagingController {
             int size
     ) {
 
-        Long businessId =  businessService.getBusinessIdForUser(userId);
-
         return ResponseEntity.ok(messagingService.getConversationMessages(conversationId,businessId,page,size));
 
     }
@@ -65,11 +66,12 @@ public class MessagingController {
     @GetMapping
     @Operation(summary = "List conversations", description = "Returns conversation summaries for the authenticated business.")
     public List<ConversationSummaryResponse> getConversations(
+            @RequestHeader("X-Business-Id")
+            @Parameter(description = "Active business id", required = true, example = "10")
+            Long businessId,
             @RequestHeader("X-User-Id")
             @Parameter(description = "Authenticated user id", required = true, example = "1")
             Long userId) {
-
-        Long businessId = businessService.getBusinessIdForUser(userId);
 
         return messagingService.getConversations(businessId);
     }
@@ -80,12 +82,13 @@ public class MessagingController {
             @PathVariable
             @Parameter(description = "Conversation id", required = true, example = "50")
             Long conversationId,
+            @RequestHeader("X-Business-Id")
+            @Parameter(description = "Active business id", required = true, example = "10")
+            Long businessId,
             @RequestHeader("X-User-Id")
             @Parameter(description = "Authenticated user id", required = true, example = "1")
             Long userId,
             @Valid @RequestBody ReadConversationRequest request) {
-
-        Long businessId = businessService.getBusinessIdForUser(userId);
 
         messagingService.markConversationAsRead(conversationId, businessId, request.getLastReadMessageId());
 

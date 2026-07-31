@@ -62,20 +62,16 @@ class InventoryControllerTest {
         ExternalSupplierDto supplierDto = ExternalSupplierDto.builder()
                                                              .build();
 
-        when(businessService.getBusinessIdForUser(1L))
-                .thenReturn(1L);
-
         doNothing().when(externalSupplierService)
                    .addInventoryStockByExternalSupplier(any(ExternalSupplierDto.class));
 
         mockMvc.perform(post("/api/v1/inventory/external-supplier")
+                       .header("X-Business-Id", 1L)
                        .header("X-User-Id", 1L)
                        .contentType(MediaType.APPLICATION_JSON)
                        .content(objectMapper.writeValueAsString(supplierDto)))
                .andExpect(status().isOk())
                .andExpect(content().string("Stock added successfully"));
-
-        verify(businessService).getBusinessIdForUser(1L);
 
         ArgumentCaptor<ExternalSupplierDto> captor =
                 ArgumentCaptor.forClass(ExternalSupplierDto.class);

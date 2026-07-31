@@ -27,11 +27,17 @@ public class BusinessHandshakeInterceptor implements HandshakeInterceptor {
             WebSocketHandler wsHandler,
             Map<String, Object> attributes) throws Exception {
 
+        String businessHeader = request.getHeaders().getFirst("X-Business-Id");
+        if(businessHeader != null){
+            attributes.put("businessId", Long.parseLong(businessHeader));
+            return true;
+        }
+
         String userId =  request.getHeaders().getFirst("X-User-Id");
-        assert userId != null;
+        if(userId == null) {
+            return true; // let other layers handle missing userId
+        }
         Long id = Long.parseLong(userId);
-
-
 
         Long businessId = businessService.getBusinessIdForUser(id);
 
