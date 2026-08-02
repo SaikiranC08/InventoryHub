@@ -3,7 +3,9 @@ package org.example.services;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 
@@ -17,61 +19,59 @@ import java.util.function.Function;
 public class JwtService {
     public static final String SECRET = "b1946ac92492d2347c6235b4d2611184c0a6e8a4e5d4f12e45c8c8bfb3e3aefd";
 
-    //extracting userId from subject
-    public Long extractUserId(String token){
-        String subject = extractClaim(token, Claims::getSubject);
-        return Long.parseLong(subject);
+    // extracting username
+    public String extractUsername(String token) {
+        return extractClaim(token, Claims::getSubject);
     }
 
-    //extracting expiration date
-    public Date extractExpiration(String token){
+    // extracting expiration date
+    public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    //is token expiry
-    private Boolean isTokenExpired(String token){
+    // is token expired
+    private Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
-    //is token valid
-    public Boolean validateToken(String token, Long userId){
-        Long extractedUserId = extractUserId(token);
-        return (extractedUserId.equals(userId) && !isTokenExpired(token));
+    // is token valid
+    public Boolean validateToken(String token, UserDetails userDetails) {
+        String username = extractUsername(token);
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
-    //create token
-    public String createToken(Map<String,Object> claims, Long userId){
+    // create token
+    public String createToken(Map<String, Object> claims, String username) {
         return Jwts.builder()
                    .setClaims(claims)
-                   .setSubject(String.valueOf(userId))
-                   .setIssuer("inventoryhub-auth")
+                   .setSubject(username)
                    .setIssuedAt(new Date(System.currentTimeMillis()))
-                   .setExpiration(new Date(System.currentTimeMillis()+1000*60*60))
-                   .signWith(getSignKey(), SignatureAlgorithm.HS256).compact();
+                   .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
+                   .signWith(getSignKey(), SignatureAlgorithm.HS256)
+                   .compact();
     }
 
-    public String GenerateToken(Long userId){
+    public String GenerateToken(String username) {
         Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, userId);
+        return createToken(claims, username);
     }
 
-    public <T> T extractClaim(String token, Function<Claims,T> claimReslover){
+    public <T> T extractClaim(String token, Function<Claims, T> claimResolver) {
         final Claims claims = extractAllClaims(token);
-        return claimReslover.apply(claims);
+        return claimResolver.apply(claims);
     }
 
-    //parsing claim data
-    private Claims extractAllClaims(String token){
-        return Jwts
-                .parser()
-                .setSigningKey(getSignKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+    // parsing claim data
+    private Claims extractAllClaims(String token) {
+        return Jwts.parser()
+                   .setSigningKey(getSignKey())
+                   .build()
+                   .parseClaimsJws(token)
+                   .getBody();
     }
 
-    private Key getSignKey(){
-        return Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
+    private Key getSignKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(SECRET);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
-
 }

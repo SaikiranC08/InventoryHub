@@ -38,10 +38,14 @@ public class TokenController {
         if(authentication.isAuthenticated()){
             RefreshToken refreshToken = refreshTokenService.createNewToken(authRequestDTO.getUsername());
             Long userId = userDetailsService.getUserIdByUsername(authRequestDTO.getUsername());
-            return new ResponseEntity<>(JwtResponseDTO.builder()
-                    .accessToken(jwtService.GenerateToken(userId))
-                    .token(refreshToken.getToken())
-                    .build(), HttpStatus.OK);
+            String jwtToken = jwtService.GenerateToken(authRequestDTO.getUsername());
+
+            return new ResponseEntity<>(
+                    JwtResponseDTO.builder()
+                                  .accessToken(jwtToken)
+                                  .token(refreshToken.getToken())
+                                  .build(),
+                    HttpStatus.OK);
 
         } else {
             return new ResponseEntity<>("Exception in User Service", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -54,7 +58,7 @@ public class TokenController {
                 .map(refreshTokenService::verifyExpiration)
                 .map(RefreshToken::getUserInfo)
                 .map(userInfo -> {
-                    String accessToken = jwtService.GenerateToken(userInfo.getUserId());
+                    String accessToken = jwtService.GenerateToken(userInfo.getUserName());
                     return JwtResponseDTO.builder()
                             .accessToken(accessToken)
                             .token(refreshTokenRequestDTO.getToken()).build();

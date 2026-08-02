@@ -3,6 +3,7 @@ package org.example.Controller;
 import org.example.entities.RefreshToken;
 import org.example.model.UserInfoDto;
 import org.example.response.JwtResponseDTO;
+import org.example.response.TokenValidationResponseDTO;
 import org.example.services.JwtService;
 import org.example.services.RefreshTokenService;
 import org.example.services.UserDetailsServiceImpl;
@@ -48,11 +49,10 @@ public class AuthController {
             }
             RefreshToken refreshToken = refreshTokenService.createNewToken(userInfoDto.getUserName());
             Long userId = userDetailsService.getUserIdByUsername(userInfoDto.getUserName());
-            String jwtToken = jwtService.GenerateToken(userId);
+            String jwtToken = jwtService.GenerateToken(userInfoDto.getUserName());
             return new ResponseEntity<>(JwtResponseDTO.builder().accessToken(jwtToken).
                     token(refreshToken.getToken()).build(), HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace();
             System.out.println("Exception in signup: " + e.getMessage());
             return new ResponseEntity<>("Exception in User Service: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -88,5 +88,27 @@ public class AuthController {
         return ResponseEntity.ok("Database: authservice at 192.168.64.4:3306\n" +
                                 "Main table: Users (contains user_id, user_name, email, phone_number, password)\n" +
                                 "Related tables: users_roles, roles, refresh_token");
+    }
+
+    @GetMapping("/validate")
+    public ResponseEntity<?> validateToken(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing token");
+            }
+
+            String token = authHeader.substring(7);
+            String username = jwtService.extractUsername(token);
+            Long userId = userDetailsService.getUserIdByUsername(username);
+
+            return ResponseEntity.ok(
+                    TokenValidationResponseDTO.builder()
+                            .username(username)
+                            .userId(userId)
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+        }
     }
 }

@@ -16,11 +16,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
 
-@Component
+
+import java.io.IOException;
 @AllArgsConstructor
 @Data
+@Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Autowired
@@ -33,20 +34,41 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String authHeader = request.getHeader("Authorization");
-        String token = null;
-        Long userId = null;
+        String path = request.getServletPath();
+        String uri = request.getRequestURI();
 
-        //extracting userId and token from header
+        System.out.println("JWT FILTER HIT");
+        System.out.println("Servlet Path: " + path);
+        System.out.println("Request URI: " + uri);
+
+        // Skip filter logic for open endpoints to avoid parsing expired/invalid tokens
+        if (
+                path.equals("/v1/login") ||
+                        path.equals("/v1/signup") ||
+                        path.equals("/v1/refreshToken") ||
+                        path.equals("/v1/validate")
+        ) {
+            System.out.println("SKIPPING JWT FILTER");
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String authHeader = request.getHeader("Authorization");
+        System.out.println("AUTH HEADER: " + authHeader);
+
+        String token = null;
+        String username = null;
+
+        //extracting username and token from header
 
         if(authHeader != null && authHeader.startsWith("Bearer ")){
             token = authHeader.substring(7);
-            userId = jwtService.extractUserId(token);
+            username = jwtService.extractUsername(token);
         }
-        if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserById(userId);
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-            if (jwtService.validateToken(token, userId)) {
+            if (jwtService.validateToken(token, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
                                 userDetails, null, userDetails.getAuthorities()
