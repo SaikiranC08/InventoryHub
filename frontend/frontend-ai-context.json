@@ -1,0 +1,576 @@
+{
+  "metadata": {
+    "project": "InventoryHub",
+    "backendType": "Spring Boot",
+    "generatedFromCodeScan": true,
+    "apiBasePath": "/api/v1",
+    "notes": [
+      "JWT contains user identity; frontend must send both X-User-Id and X-Business-Id for business-scoped APIs.",
+      "Business context is now header-driven via X-Business-Id.",
+      "Use Swagger UI (if running) as final source of truth for field-level validation constraints/examples."
+    ]
+  },
+  "authAndHeaders": {
+    "requiredHeadersByDefault": [
+      "X-User-Id",
+      "X-Business-Id"
+    ],
+    "headerRules": {
+      "X-User-Id": {
+        "type": "number",
+        "purpose": "auth/audit context"
+      },
+      "X-Business-Id": {
+        "type": "number",
+        "purpose": "active business context for inventory/dashboard/messaging flows"
+      }
+    }
+  },
+  "errorHandling": {
+    "commonErrorResponse": {
+      "message": "string",
+      "status": "number",
+      "timestamp": "ISO-8601 datetime"
+    },
+    "validationErrorResponse": {
+      "type": "object map",
+      "shape": {
+        "<fieldName>": "<validationMessage>"
+      }
+    }
+  },
+  "enums": {
+    "BusinessType": [
+      "WAREHOUSE",
+      "STORE"
+    ],
+    "BusinessDomain": [
+      "GROCERY",
+      "MEDICAL",
+      "CLOTHES",
+      "ELECTRONICS",
+      "GENERAL"
+    ],
+    "UnitType": [
+      "PIECE",
+      "KG",
+      "LITRE",
+      "BOX",
+      "PACKET"
+    ],
+    "OrderStatus": [
+      "PENDING",
+      "APPROVED",
+      "IN_TRANSIT",
+      "COMPLETED",
+      "CANCELLED"
+    ],
+    "StockRequestStatus": [
+      "PENDING",
+      "APPROVED",
+      "REJECTED"
+    ],
+    "AttributeDataType": [
+      "TEXT",
+      "NUMBER",
+      "BOOLEAN"
+    ]
+  },
+  "modules": [
+    {
+      "name": "business",
+      "basePath": "/api/v1/business",
+      "headers": [
+        "X-User-Id"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/api/v1/business",
+          "requestBody": {
+            "businessType": "BusinessType",
+            "businessDomain": "BusinessDomain",
+            "businessName": "string",
+            "address": "string",
+            "city": "string",
+            "state": "string",
+            "pincode": "string",
+            "country": "string"
+          },
+          "responseBody": "BusinessResponseDto",
+          "status": 201
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/business",
+          "responseBody": "BusinessResponseDto[]"
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/business/{businessId}",
+          "pathParams": [
+            {
+              "name": "businessId",
+              "type": "number"
+            }
+          ],
+          "responseBody": "BusinessResponseDto"
+        },
+        {
+          "method": "PATCH",
+          "path": "/api/v1/business/{businessId}",
+          "pathParams": [
+            {
+              "name": "businessId",
+              "type": "number"
+            }
+          ],
+          "requestBody": {
+            "businessType": "BusinessType",
+            "businessDomain": "BusinessDomain",
+            "businessName": "string",
+            "address": "string",
+            "city": "string",
+            "state": "string",
+            "pincode": "string",
+            "country": "string"
+          },
+          "responseBody": "BusinessResponseDto"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/v1/business/{businessId}",
+          "pathParams": [
+            {
+              "name": "businessId",
+              "type": "number"
+            }
+          ],
+          "responseBody": "BusinessResponseDto"
+        }
+      ],
+      "dto": {
+        "BusinessResponseDto": {
+          "businessId": "number",
+          "businessType": "BusinessType",
+          "businessDomain": "BusinessDomain",
+          "businessName": "string",
+          "address": "string",
+          "city": "string",
+          "state": "string",
+          "pincode": "string",
+          "country": "string",
+          "ownerId": "number"
+        }
+      }
+    },
+    {
+      "name": "product",
+      "basePath": "/api/v1/products",
+      "headers": [],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/api/v1/products/unit-types",
+          "responseBody": "UnitType[]"
+        },
+        {
+          "method": "POST",
+          "path": "/api/v1/products/create-or-find",
+          "requestBody": {
+            "productName": "string",
+            "brand": "string",
+            "categoryId": "number"
+          },
+          "responseBody": {
+            "productId": "number"
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/v1/products/product-variant/create-or-find",
+          "requestBody": {
+            "productId": "number",
+            "sku": "string",
+            "unitType": "UnitType",
+            "unitValue": "number",
+            "currentPrice": "number",
+            "attributes": "object"
+          },
+          "responseBody": {
+            "id": "number"
+          }
+        }
+      ]
+    },
+    {
+      "name": "category",
+      "basePath": "/api/v1/categories",
+      "headers": [],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/api/v1/categories",
+          "responseBody": "CategoryResponse[]"
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/categories/{categoryId}/attributes",
+          "pathParams": [
+            {
+              "name": "categoryId",
+              "type": "number"
+            }
+          ],
+          "responseBody": "CategoryAttributeResponse[]"
+        }
+      ],
+      "dto": {
+        "CategoryResponse": {
+          "categoryId": "number",
+          "categoryName": "string"
+        },
+        "CategoryAttributeResponse": {
+          "attributKey": "string",
+          "dataType": "AttributeDataType"
+        }
+      }
+    },
+    {
+      "name": "inventory",
+      "basePath": "/api/v1/inventory",
+      "headers": [
+        "X-User-Id",
+        "X-Business-Id"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/api/v1/inventory/external-supplier",
+          "requestBody": {
+            "supplierName": "string",
+            "fromBusinessId": "number|null",
+            "status": "string|null",
+            "reorderLevel": "number",
+            "productName": "string",
+            "brand": "string",
+            "categoryId": "number",
+            "productId": "number|null",
+            "sku": "string",
+            "unitType": "UnitType",
+            "unitValue": "number",
+            "currentPrice": "number",
+            "attributes": "object|null",
+            "quantity": "number",
+            "unitPrice": "number",
+            "totalPrice": "number",
+            "remark": "string|null"
+          },
+          "responseBody": "string",
+          "successMessage": "Stock added successfully"
+        },
+        {
+          "method": "POST",
+          "path": "/api/v1/inventory/external-buyer",
+          "requestBody": {
+            "customerName": "string",
+            "variantId": "number",
+            "quantity": "number",
+            "unitPrice": "number",
+            "totalPrice": "number",
+            "remark": "string|null"
+          },
+          "responseBody": "string",
+          "successMessage": "Stock sold successfully"
+        },
+        {
+          "method": "POST",
+          "path": "/api/v1/inventory/stock-transfer",
+          "requestBody": {
+            "toBusinessId": "number",
+            "productVariantId": "number",
+            "unitPrice": "number",
+            "quantity": "number",
+            "totalPrice": "number"
+          },
+          "responseBody": "string",
+          "successMessage": "Stock transferred successfully"
+        },
+        {
+          "method": "POST",
+          "path": "/api/v1/inventory/stock-requests",
+          "requestBody": {
+            "toBusinessId": "number",
+            "productVariantId": "number",
+            "quantity": "number",
+            "offeredUnitPrice": "number",
+            "offeredTotalPrice": "number"
+          },
+          "responseBody": "string",
+          "successMessage": "Stock requested successfully"
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/inventory/stock-requests",
+          "responseBody": "StockRequestResponse[]"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/v1/inventory/stock-requests/{requestId}",
+          "pathParams": [
+            {
+              "name": "requestId",
+              "type": "number"
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "status",
+              "type": "StockRequestStatus"
+            }
+          ],
+          "responseBody": "string",
+          "successMessage": "updated the stock request"
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/inventory/search",
+          "queryParams": [
+            {
+              "name": "query",
+              "type": "string"
+            }
+          ],
+          "responseBody": "SearchProductResponse[]"
+        }
+      ],
+      "dto": {
+        "StockRequestResponse": {
+          "toBusinessId": "number",
+          "fromBusinessId": "number",
+          "productVariantId": "number",
+          "quantity": "number",
+          "offeredUnitPrice": "number",
+          "offeredTotalPrice": "number"
+        },
+        "SearchProductResponse": {
+          "productVariantId": "number",
+          "businessId": "number",
+          "businessName": "string",
+          "productName": "string",
+          "sku": "string",
+          "quantity": "number",
+          "currentPrice": "number"
+        }
+      }
+    },
+    {
+      "name": "dashboard",
+      "basePath": "/api/v1/dashboard",
+      "headers": [
+        "X-Business-Id"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/api/v1/dashboard/summary",
+          "responseBody": "DashboardSummaryResponse"
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/dashboard/top-selling-products",
+          "responseBody": "TopSellingProductResponse[]"
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/dashboard/sales-chart",
+          "queryParams": [
+            {
+              "name": "range",
+              "type": "string",
+              "allowed": [
+                "DAY",
+                "WEEK",
+                "MONTH",
+                "YEAR"
+              ]
+            }
+          ],
+          "responseBody": "SalesChartResponse[]"
+        }
+      ],
+      "dto": {
+        "DashboardSummaryResponse": {
+          "totalProducts": "number",
+          "lowStockProducts": "number",
+          "outOfStockProducts": "number",
+          "pendingStockRequests": "number",
+          "todayPurchaseOrders": "number",
+          "todaySalesOrders": "number",
+          "monthlyPurchaseOrders": "number",
+          "monthlySalesOrders": "number",
+          "completedTransfers": "number"
+        },
+        "TopSellingProductResponse": {
+          "productVariantId": "number",
+          "productName": "string",
+          "sku": "string",
+          "totalQuantitySold": "number"
+        },
+        "SalesChartResponse": {
+          "label": "string",
+          "sales": "number",
+          "purchases": "number"
+        }
+      }
+    },
+    {
+      "name": "messaging",
+      "basePath": "/api/v1/conversations",
+      "headers": [
+        "X-User-Id",
+        "X-Business-Id"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/api/v1/conversations",
+          "responseBody": "ConversationSummaryResponse[]"
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/conversations/{conversationId}/messages",
+          "pathParams": [
+            {
+              "name": "conversationId",
+              "type": "number"
+            }
+          ],
+          "queryParams": [
+            {
+              "name": "page",
+              "type": "number",
+              "default": 0
+            },
+            {
+              "name": "size",
+              "type": "number",
+              "default": 20
+            }
+          ],
+          "responseBody": "SpringPage<MessageHistoryResponse>"
+        },
+        {
+          "method": "PATCH",
+          "path": "/api/v1/conversations/{conversationId}/read",
+          "pathParams": [
+            {
+              "name": "conversationId",
+              "type": "number"
+            }
+          ],
+          "requestBody": {
+            "lastReadMessageId": "number"
+          },
+          "responseBody": "empty",
+          "status": 204
+        }
+      ],
+      "websocket": {
+        "stompEndpoint": "/ws",
+        "appDestinationPrefix": "/app",
+        "brokerPrefixes": [
+          "/topics",
+          "/queue"
+        ],
+        "sendMessageDestination": "/app/chat.send",
+        "userQueueSubscription": "/user/queue/messages",
+        "sendMessagePayload": {
+          "conversationId": "number|null",
+          "receiverBusinessId": "number",
+          "content": "string"
+        },
+        "sendMessageResponse": {
+          "conversationId": "number",
+          "messageId": "number",
+          "senderBusinessId": "number",
+          "content": "string",
+          "sentAt": "ISO-8601 datetime"
+        }
+      },
+      "dto": {
+        "ConversationSummaryResponse": {
+          "conversationId": "number",
+          "otherBusinessId": "number",
+          "otherBusinessName": "string",
+          "lastMessage": "string",
+          "lastMessageTime": "ISO-8601 datetime",
+          "lastMessageSenderId": "number",
+          "unreadCount": "number"
+        },
+        "MessageHistoryResponse": {
+          "messageId": "number",
+          "senderBusinessId": "number",
+          "content": "string",
+          "sentAt": "ISO-8601 datetime"
+        }
+      }
+    }
+  ],
+  "frontendFlowHints": [
+    {
+      "flow": "Business selection and context",
+      "steps": [
+        "Load /api/v1/business with X-User-Id.",
+        "User selects active business; store businessId in app state.",
+        "Attach X-Business-Id to all inventory/dashboard/messaging API calls."
+      ]
+    },
+    {
+      "flow": "New stock intake",
+      "steps": [
+        "Ensure product exists: POST /api/v1/products/create-or-find.",
+        "Ensure variant exists: POST /api/v1/products/product-variant/create-or-find.",
+        "Create stock entry: POST /api/v1/inventory/external-supplier."
+      ]
+    },
+    {
+      "flow": "Sell stock",
+      "steps": [
+        "Find product/variant with inventory/search (optional UX aid).",
+        "POST /api/v1/inventory/external-buyer.",
+        "Refresh dashboard summary and sales chart."
+      ]
+    },
+    {
+      "flow": "Inter-business movement",
+      "steps": [
+        "Transfer directly: POST /api/v1/inventory/stock-transfer.",
+        "Or request first: POST /api/v1/inventory/stock-requests then update via PUT status."
+      ]
+    },
+    {
+      "flow": "Messaging",
+      "steps": [
+        "Load conversations via GET /api/v1/conversations.",
+        "Load thread via GET /api/v1/conversations/{id}/messages.",
+        "Send via STOMP /app/chat.send and subscribe /user/queue/messages.",
+        "Mark read via PATCH /api/v1/conversations/{id}/read."
+      ]
+    },
+    {
+      "flow": "Dashboard",
+      "steps": [
+        "Load summary, top-selling, sales-chart in parallel using X-Business-Id.",
+        "Allow chart range switch: DAY/WEEK/MONTH/YEAR.",
+        "Refresh widgets after mutations in inventory module."
+      ]
+    }
+  ],
+  "frontendAgentInstructions": [
+    "Do not infer business from user in UI; always use selected business for X-Business-Id.",
+    "Keep API client centralized with header interceptors.",
+    "Treat response strings from inventory mutations as user-facing success toasts.",
+    "Use Swagger UI to verify any uncertain nullable/required field before final UI generation."
+  ]
+}

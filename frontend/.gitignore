@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Vite cache
+.vite/
+
+# Environment files (keep .env.example, ignore actual secrets)
+.env.local
+.env.production
+.env.*.local
+
+# Editor / OS
+.DS_Store
+*.log
