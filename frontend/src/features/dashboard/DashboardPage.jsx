@@ -52,7 +52,9 @@ import {
   History,
   ThumbsUp,
   ThumbsDown,
+  MessageSquare,
 } from 'lucide-react';
+
 
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
