@@ -1,6 +1,7 @@
 package com.saikiran.inventory.inventory.service;
 
 
+import com.saikiran.inventory.inventory.dto.InventoryResponse;
 import com.saikiran.inventory.inventory.dto.SearchProductResponse;
 import com.saikiran.inventory.inventory.repository.InventoryRepository;
 import com.saikiran.inventory.product.service.ProductService;
@@ -18,6 +19,11 @@ public class InventorySearchService {
     private final InventoryRepository inventoryRepository;
 
 
+    public List<InventoryResponse> getInventoryByBusinessId(Long businessId) {
+        log.debug("Fetching inventory for businessId={}", businessId);
+        return inventoryRepository.findInventoryResponseByBusinessId(businessId);
+    }
+
     public List<SearchProductResponse> getBusinessInfoForSearchQuery(String name){
         log.debug("Searching inventory for query={}", name);
 
@@ -29,3 +35,4 @@ public class InventorySearchService {
         return results;
     }
 }
+

@@ -1,13 +1,19 @@
 # Stage 1: Build
-FROM eclipse-temurin:21-jdk AS build
+FROM gradle:8.14.5-jdk21 AS build
+
 WORKDIR /app
+
 COPY . .
-RUN chmod +x ./gradlew
-RUN ./gradlew clean bootJar -x test
+
+RUN gradle clean bootJar -x test
 
 # Stage 2: Run
 FROM eclipse-temurin:21-jre
+
 WORKDIR /app
-COPY --from=build /app/build/libs/*-SNAPSHOT.jar app.jar
+
+COPY --from=build /app/build/libs/*.jar app.jar
+
 EXPOSE 8080
+
 ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -87,10 +87,12 @@ public interface InventoryMapper {
     @Mapping(target = "updatedAt",ignore = true)
     StockRequest toStockRequest(StockRequestDto dto);
 
+    @Mapping(target = "requestId", source = "stockRequestId")
     @Mapping(target = "fromBusinessId", source = "fromBusiness.businessId")
     @Mapping(target = "toBusinessId", source = "toBusiness.businessId")
     @Mapping(target = "productVariantId", source = "productVariant.variantId")
     StockRequestResponse toResponse(StockRequest entity);
+
 
     //stock request entity to stock transfer dto
     @Mapping(target = "fromBusinessId", source = "fromBusiness.businessId")

@@ -27,6 +27,19 @@ public class InventoryController {
     private final BusinessService businessService;
     private final InventorySearchService searchService;
 
+    @GetMapping
+    @Operation(summary = "List inventory", description = "Returns all inventory items for the active business.")
+    public ResponseEntity<List<InventoryResponse>> getInventory(
+            @RequestHeader("X-Business-Id")
+            @Parameter(description = "Active business id", required = true, example = "10")
+            Long businessId,
+            @RequestHeader("X-User-Id")
+            @Parameter(description = "Authenticated user id", required = true, example = "1")
+            Long userId ) {
+        return ResponseEntity.ok(searchService.getInventoryByBusinessId(businessId));
+    }
+
+
     @PostMapping("/external-supplier")
     @Operation(summary = "Add stock from supplier", description = "Creates inventory from an external supplier transaction.")
     public ResponseEntity<String> addInventoryStockByExternalSupplier(

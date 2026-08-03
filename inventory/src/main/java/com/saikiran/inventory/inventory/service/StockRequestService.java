@@ -62,17 +62,18 @@ public class StockRequestService {
     }
 
     public List<StockRequestResponse> getStockRequestInfo(Long businessId){
-        log.debug("Fetching pending stock requests for businessId={}", businessId);
-        List<StockRequest> stockRequestList = stockRequestRepository.findStockRequestByToBusiness_BusinessIdAndStatus(businessId,StockRequestStatus.PENDING);
+        log.debug("Fetching stock requests for businessId={}", businessId);
+        List<StockRequest> stockRequestList = stockRequestRepository.findStockRequestByToBusiness_BusinessId(businessId);
 
         if (stockRequestList.isEmpty()){
-            log.warn("No pending stock requests found for businessId={}", businessId);
-            throw new InvalidBusinessOperationException("No pending requests found");
+            log.debug("No stock requests found for businessId={}", businessId);
+            return List.of();
         }
-        log.debug("Found {} pending stock requests for businessId={}", stockRequestList.size(), businessId);
+        log.debug("Found {} stock requests for businessId={}", stockRequestList.size(), businessId);
 
         return stockRequestList.stream()
                 .map(inventoryMapper::toResponse)
+
                 .toList();
     }
 

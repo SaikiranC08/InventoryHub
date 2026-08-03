@@ -46,6 +46,14 @@ public class BusinessService {
         return info.stream().map(businessResponseMapper::toResponseDto).toList();
     }
 
+    //getting all businesses in the network (for transfer destination dropdown)
+    public List<BusinessResponseDto> getAllBusinesses(){
+        log.debug("Fetching all businesses in network");
+        List<Business> all = businessRepository.findAll();
+        log.debug("Found {} total businesses", all.size());
+        return all.stream().map(businessResponseMapper::toResponseDto).toList();
+    }
+
     public Optional<Business> getBusinessInfoById(Long id){
         if(id == null){
             log.warn("Business lookup requested without businessId");

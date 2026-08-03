@@ -54,7 +54,16 @@ public class BusinessController {
     ){
         return ResponseEntity
                 .ok(businessService.getBusinessInfoByOwnerId(ownerId));
+    }
 
+    @GetMapping("/all")
+    @Operation(summary = "List all businesses", description = "Returns all businesses in the network (for transfer/marketplace).")
+    public ResponseEntity<List<BusinessResponseDto>> getAllBusinesses(
+            @RequestHeader("X-User-Id")
+            @Parameter(description = "Authenticated user id", required = true, example = "1")
+            @NotNull Long ownerId
+    ){
+        return ResponseEntity.ok(businessService.getAllBusinesses());
     }
 
     @DeleteMapping("/{businessId}")

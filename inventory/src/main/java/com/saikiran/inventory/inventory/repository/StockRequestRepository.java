@@ -11,7 +11,10 @@ import java.util.Optional;
 @Repository
 public interface StockRequestRepository extends JpaRepository<StockRequest,Long> {
 
-    List<StockRequest> findStockRequestByToBusiness_BusinessIdAndStatus(Long id,StockRequestStatus status);
+    List<StockRequest> findStockRequestByToBusiness_BusinessIdAndStatus(Long id, StockRequestStatus status);
+
+    List<StockRequest> findStockRequestByToBusiness_BusinessId(Long id);
 
     Optional<StockRequest> findByStockRequestId(Long stockRequestId);
 }
+
