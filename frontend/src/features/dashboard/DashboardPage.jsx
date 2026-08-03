@@ -49,7 +49,11 @@ import {
   Activity,
   X,
   ChevronRight,
+  History,
+  ThumbsUp,
+  ThumbsDown,
 } from 'lucide-react';
+
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -151,7 +155,11 @@ export const DashboardPage = () => {
   const [stockRequestsLoading, setStockRequestsLoading] = useState(true);
   const [updatingRequestId, setUpdatingRequestId] = useState(null);
 
+  const [recentDecisions, setRecentDecisions] = useState([]);
+  const [recentDecisionsLoading, setRecentDecisionsLoading] = useState(true);
+
   const [refreshing, setRefreshing] = useState(false);
+
 
   // ── Business resolution ──────────────────────────────────────────────────
   useEffect(() => {
@@ -188,6 +196,7 @@ export const DashboardPage = () => {
     ]);
     setRefreshing(false);
   }, [business, chartRange]);
+
 
   useEffect(() => {
     if (business) fetchAll();
@@ -246,13 +255,18 @@ export const DashboardPage = () => {
     try {
       setStockRequestsLoading(true);
       const data = await inventoryApi.getStockRequests();
-      setStockRequests(data || []);
+      const all = data || [];
+      setStockRequests(all);
+      setRecentDecisions(all.filter((r) => r.status === 'APPROVED' || r.status === 'REJECTED'));
     } catch {
       setStockRequests([]);
+      setRecentDecisions([]);
     } finally {
       setStockRequestsLoading(false);
+      setRecentDecisionsLoading(false);
     }
   };
+
 
   const handleRangeChange = (range) => {
     setChartRange(range);
@@ -414,6 +428,10 @@ export const DashboardPage = () => {
           <a className="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all" href="#">
             <BarChart3 className="h-4 w-4" /> Reports
           </a>
+          <button onClick={() => navigate(ROUTES.STOCK_HISTORY)} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left">
+            <History className="h-4 w-4" /> Stock History
+          </button>
+
         </nav>
 
         <div className="mt-auto border-t border-slate-100 pt-4 flex flex-col gap-1">
@@ -808,9 +826,90 @@ export const DashboardPage = () => {
               </div>
             </div>
 
+            {/* ── Recent Request Decisions ─────────────────────────── */}
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+              <div className="flex justify-between items-center px-6 py-4 border-b border-slate-100">
+                <div>
+                  <h2 className="text-base font-bold text-slate-900">Recent Request Decisions</h2>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Latest processed stock requests</p>
+                </div>
+                <button
+                  onClick={() => navigate(ROUTES.STOCK_HISTORY)}
+                  className="text-[11px] font-bold text-blue-600 hover:text-blue-700 flex items-center gap-0.5"
+                >
+                  View History <ChevronRight className="h-3 w-3" />
+                </button>
+              </div>
+
+              {recentDecisionsLoading ? (
+                <div className="p-4 space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <Skeleton key={i} className="h-14 w-full rounded-xl" />
+                  ))}
+                </div>
+              ) : recentDecisions.length === 0 ? (
+                <div className="flex flex-col items-center justify-center text-slate-400 gap-2 py-10">
+                  <ClipboardList className="h-10 w-10 text-slate-200" />
+                  <p className="text-sm font-medium">No processed requests yet</p>
+                  <p className="text-xs text-slate-400">Approved or rejected requests will appear here</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-100 max-h-[320px] overflow-y-auto">
+                  {recentDecisions.slice(0, 8).map((req, idx) => {
+                    const isApproved = req.status === 'APPROVED';
+                    return (
+                      <div
+                        key={req.requestId}
+                        className="flex items-center justify-between gap-3 px-5 py-3.5 hover:bg-slate-50/60 transition-all duration-200 hover:-translate-y-px hover:shadow-sm"
+                        style={{ animation: `fadeUp 0.3s ease ${idx * 0.05}s both` }}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                            isApproved ? 'bg-emerald-50' : 'bg-red-50'
+                          }`}>
+                            {isApproved
+                              ? <ThumbsUp className="h-4 w-4 text-emerald-500" />
+                              : <ThumbsDown className="h-4 w-4 text-red-500" />
+                            }
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-slate-800 truncate">
+                              Variant #{req.productVariantId}
+                            </p>
+                            <p className="text-[10px] text-slate-400">
+                              From Biz #{req.fromBusinessId} · <span className="font-semibold">{req.quantity} units</span>
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className={`inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full border ${
+                            isApproved
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              : 'bg-red-50 text-red-700 border-red-200'
+                          }`}>
+                            {isApproved
+                              ? <><CheckCircle className="h-2.5 w-2.5" /> Approved</>
+                              : <><XCircle className="h-2.5 w-2.5" /> Rejected</>
+                            }
+                          </span>
+                          <button
+                            onClick={() => navigate(ROUTES.STOCK_HISTORY)}
+                            className="text-[10px] font-bold text-slate-400 hover:text-blue-600 px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors"
+                          >
+                            View
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
           </div>
         </div>
       </main>
     </div>
   );
 };
+

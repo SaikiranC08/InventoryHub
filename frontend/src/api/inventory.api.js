@@ -74,6 +74,13 @@ export const updateStockRequest = (requestId, status) => {
   });
 };
 
+export const getStockMovements = () => {
+  return apiFetch('/api/v1/inventory/movements', {
+    method: 'GET',
+    headers: getHeaders(),
+  });
+};
+
 export const inventoryApi = {
   getInventory,
   purchaseStock,
@@ -83,5 +90,5 @@ export const inventoryApi = {
   createStockRequest,
   getStockRequests,
   updateStockRequest,
+  getStockMovements,
 };
-

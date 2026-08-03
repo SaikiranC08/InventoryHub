@@ -7,8 +7,10 @@ export const ROUTES = {
   BUSINESS_CREATE: '/business/create',
   DASHBOARD: '/dashboard',
   INVENTORY: '/inventory',
+  STOCK_HISTORY: '/stock-history',
   STOCK_REQUESTS: '/stock-requests',
   MESSAGING: '/messaging',
   NOT_FOUND: '/404',
 };
+
 

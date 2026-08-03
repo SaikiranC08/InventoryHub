@@ -29,6 +29,9 @@ const DashboardPage = lazy(() =>
 const InventoryPage = lazy(() =>
   import('@/features/inventory/InventoryPage').then((m) => ({ default: m.InventoryPage }))
 );
+const StockHistoryPage = lazy(() =>
+  import('@/features/stock-history/StockHistoryPage').then((m) => ({ default: m.StockHistoryPage }))
+);
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-stitch-surface p-4">
@@ -67,6 +70,7 @@ export const AppRoutes = () => {
         <Route element={<ProtectedRoute />}>
           <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
           <Route path={ROUTES.INVENTORY} element={<InventoryPage />} />
+          <Route path={ROUTES.STOCK_HISTORY} element={<StockHistoryPage />} />
           <Route path={ROUTES.BUSINESS_SELECT} element={<BusinessSelectPage />} />
           <Route path={ROUTES.BUSINESS_CREATE} element={<BusinessCreatePage />} />
         </Route>
@@ -76,4 +80,3 @@ export const AppRoutes = () => {
     </Suspense>
   );
 };
-

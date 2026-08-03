@@ -26,6 +26,8 @@ public class InventoryController {
     private final StockRequestService stockRequestService;
     private final BusinessService businessService;
     private final InventorySearchService searchService;
+    private final StockMovementService stockMovementService;
+
 
     @GetMapping
     @Operation(summary = "List inventory", description = "Returns all inventory items for the active business.")
@@ -156,6 +158,18 @@ public class InventoryController {
         return ResponseEntity.ok(
                 searchService.getBusinessInfoForSearchQuery(query)
         );
+    }
+
+    @GetMapping("/movements")
+    @Operation(summary = "Stock movement history", description = "Returns all stock movements for the active business ordered by newest first.")
+    public ResponseEntity<List<StockMovementResponse>> getMovements(
+            @RequestHeader("X-Business-Id")
+            @Parameter(description = "Active business id", required = true, example = "10")
+            Long businessId,
+            @RequestHeader("X-User-Id")
+            @Parameter(description = "Authenticated user id", required = true, example = "1")
+            Long userId) {
+        return ResponseEntity.ok(stockMovementService.getMovementsByBusinessId(businessId));
     }
 
 }
