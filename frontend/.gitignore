@@ -16,3 +16,4 @@ build/
 # Editor / OS
 .DS_Store
 *.log
+node_modules_legacy_vite_cache/
