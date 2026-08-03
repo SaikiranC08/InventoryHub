@@ -42,8 +42,10 @@ import {
   Inbox,
   CheckCircle,
   XCircle,
-  ClipboardList
+  ClipboardList,
+  History
 } from 'lucide-react';
+
 
 export const InventoryPage = () => {
   const navigate = useNavigate();
@@ -623,7 +625,15 @@ export const InventoryPage = () => {
             <BarChart3 className="h-4 w-4" />
             Reports
           </a>
+          <button 
+            onClick={() => navigate(ROUTES.STOCK_HISTORY)}
+            className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all duration-200 text-left"
+          >
+            <History className="h-4 w-4" />
+            Stock History
+          </button>
         </nav>
+
 
         {/* Bottom Panel */}
         <div className="mt-auto border-t border-slate-100 pt-4 flex flex-col gap-1">
