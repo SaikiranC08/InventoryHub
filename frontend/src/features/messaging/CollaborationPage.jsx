@@ -296,17 +296,51 @@ export const CollaborationPage = () => {
       client.subscribe(`/user/queue/messages`, (msg) => {
         const payload = JSON.parse(msg.body);
         
-        // Append message if it belongs to active conversation
-        if (activeConv && payload.conversationId === activeConv.conversationId) {
-          setMessages((prev) => [...prev, payload]);
-          // Mark read
-          messagingApi.markAsRead(activeConv.conversationId, payload.messageId);
+        // Match message if it belongs to active conversation
+        const isMatch = activeConv && (
+          payload.conversationId === activeConv.conversationId ||
+          (activeConv.isTemporary && payload.senderBusinessId === business.businessId) ||
+          (activeConv.isTemporary && payload.senderBusinessId === activeConv.otherBusinessId)
+        );
+
+        if (isMatch) {
+          // If conversation was temporary, resolve the real conversationId
+          if (activeConv.isTemporary) {
+            setActiveConv((prev) => ({
+              ...prev,
+              conversationId: payload.conversationId,
+              isTemporary: false,
+            }));
+            fetchConversations(payload.conversationId);
+          }
+
+          setMessages((prev) => {
+            // Deduplicate optimistic messages
+            const exists = prev.some(
+              (m) => m.messageId === payload.messageId || (m.content === payload.content && !m.messageId)
+            );
+            if (exists) {
+              return prev.map((m) =>
+                m.content === payload.content && !m.messageId ? payload : m
+              );
+            }
+            return [...prev, payload];
+          });
+
+          if (payload.conversationId) {
+            messagingApi.markAsRead(payload.conversationId, payload.messageId);
+          }
         } else {
-          // Play notification and increment unread count
+          // Play notification and increment unread count for other conversations
           setConversations((prev) =>
             prev.map((c) =>
               c.conversationId === payload.conversationId
-                ? { ...c, unreadCount: c.unreadCount + 1, lastMessage: payload.content, lastMessageTime: payload.sentAt }
+                ? {
+                    ...c,
+                    unreadCount: c.unreadCount + 1,
+                    lastMessage: payload.content,
+                    lastMessageTime: payload.sentAt,
+                  }
                 : c
             )
           );
@@ -331,17 +365,50 @@ export const CollaborationPage = () => {
     return () => {
       client.deactivate();
     };
-  }, [business, activeConv]);
+  }, [business, activeConv, fetchConversations]);
+
+  // ─── Refetch on focus or reconnect ──────────────────────────────────────────
+  useEffect(() => {
+    const handleFocus = () => {
+      if (activeConv && !activeConv.isTemporary) {
+        fetchMessages(activeConv);
+        fetchConversations(activeConv.conversationId);
+      }
+    };
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [activeConv, fetchMessages, fetchConversations]);
+
+  useEffect(() => {
+    if (connected && activeConv && !activeConv.isTemporary) {
+      fetchMessages(activeConv);
+      fetchConversations(activeConv.conversationId);
+    }
+  }, [connected]);
 
   // ─── 6. Message actions ───────────────────────────────────────────────────
   const handleSendMessage = async (e) => {
     if (e) e.preventDefault();
     if (!messageText.trim() || !activeConv) return;
 
+    const currentMsgText = messageText;
+    setMessageText('');
+
+    // Create optimistic message object
+    const optimisticMsg = {
+      messageId: null,
+      senderBusinessId: business.businessId,
+      content: currentMsgText,
+      sentAt: new Date().toISOString(),
+    };
+
+    // Update screen instantly
+    setMessages((prev) => [...prev, optimisticMsg]);
+
     const payload = {
       conversationId: activeConv.isTemporary ? null : activeConv.conversationId,
       receiverBusinessId: activeConv.otherBusinessId,
-      content: messageText,
+      content: currentMsgText,
       sentAt: new Date().toISOString(),
     };
 
@@ -351,18 +418,22 @@ export const CollaborationPage = () => {
           destination: '/app/chat.send',
           body: JSON.stringify(payload),
         });
-        setMessageText('');
-        // Refresh conversations to resolve temporary shell
+        
+        // Refresh conversations to update sidebar summaries
         if (activeConv.isTemporary) {
-          setTimeout(() => fetchConversations(), 1000);
+          setTimeout(() => fetchConversations(), 1500);
         }
       } else {
         toast.error('Disconnected from chat server. Reconnecting...');
+        // Remove optimistic message on disconnect
+        setMessages((prev) => prev.filter((m) => m !== optimisticMsg));
       }
     } catch {
       toast.error('Failed to send message');
+      setMessages((prev) => prev.filter((m) => m !== optimisticMsg));
     }
   };
+
 
   const handleUpdateStockRequest = async (status) => {
     if (!activeRequest) return;
