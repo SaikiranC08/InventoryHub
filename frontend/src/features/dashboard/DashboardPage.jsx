@@ -431,7 +431,9 @@ export const DashboardPage = () => {
           <button onClick={() => navigate(ROUTES.STOCK_HISTORY)} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left">
             <History className="h-4 w-4" /> Stock History
           </button>
-
+          <button onClick={() => navigate(ROUTES.MESSAGING)} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left animate-pulse">
+            <MessageSquare className="h-4 w-4" /> Collaboration
+          </button>
         </nav>
 
         <div className="mt-auto border-t border-slate-100 pt-4 flex flex-col gap-1">

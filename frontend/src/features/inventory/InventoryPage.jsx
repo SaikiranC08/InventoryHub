@@ -632,7 +632,15 @@ export const InventoryPage = () => {
             <History className="h-4 w-4" />
             Stock History
           </button>
+          <button 
+            onClick={() => navigate(ROUTES.MESSAGING)}
+            className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all duration-200 text-left"
+          >
+            <MessageSquare className="h-4 w-4" />
+            Collaboration
+          </button>
         </nav>
+
 
 
         {/* Bottom Panel */}
@@ -1759,11 +1767,18 @@ export const InventoryPage = () => {
 
                               <Button 
                                 size="sm"
-                                onClick={() => toast.info('Messaging conversation coming in messaging phase!')}
+                                onClick={() => navigate(ROUTES.MESSAGING, { 
+                                  state: { 
+                                    otherBusinessId: result.businessId, 
+                                    otherBusinessName: result.businessName,
+                                    startProduct: result 
+                                  } 
+                                })}
                                 className="h-8 text-[10px] font-bold bg-slate-50 border border-slate-150 hover:bg-slate-100 text-slate-700 rounded-lg flex items-center gap-1"
                               >
                                 <MessageSquare className="h-3 w-3" /> Chat
                               </Button>
+
                             </div>
                           </div>
                         </div>
