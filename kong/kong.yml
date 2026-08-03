@@ -7,6 +7,39 @@ consumers:
         algorithm: HS256
         secret: b1946ac92492d2347c6235b4d2611184c0a6e8a4e5d4f12e45c8c8bfb3e3aefd
 
+plugins:
+  - name: cors
+    config:
+      origins:
+        - http://localhost:3000
+      methods:
+        - GET
+        - POST
+        - PUT
+        - PATCH
+        - DELETE
+        - OPTIONS
+      headers:
+        - Authorization
+        - Content-Type
+        - Content-Length
+        - Accept
+        - Accept-Language
+        - Accept-Encoding
+        - X-Requested-With
+        - X-Business-Id
+        - X-User-Id
+        - X-Username
+        - Idempotency-Key
+      exposed_headers:
+        - Authorization
+        - X-Business-Id
+        - X-User-Id
+        - X-Username
+      credentials: true
+      max_age: 3600
+      preflight_continue: false
+
 services:
   - name: inventory-service
     url: http://inventory-service:8080
@@ -21,6 +54,10 @@ services:
         config:
           claims_to_verify: [exp]
           key_claim_name: iss
+          secret_is_base64: true
+          run_on_preflight: false
+
+
 
       - name: pre-function
         config:
@@ -45,12 +82,18 @@ services:
                   if decoded_json then
                     local cjson = require "cjson.safe"
                     local claims = cjson.decode(decoded_json)
-                    if claims and claims.sub then
-                      kong.service.request.set_header("X-User-Id", claims.sub)
+                    if claims then
+                      if claims.userId then
+                        kong.service.request.set_header("X-User-Id", tostring(claims.userId))
+                      end
+                      if claims.sub then
+                        kong.service.request.set_header("X-Username", claims.sub)
+                      end
                     end
                   end
                 end
               end
+
 
   - name: auth-service
     url: http://auth-service:9898
@@ -59,5 +102,6 @@ services:
         paths:
           - /auth/v1/login
           - /auth/v1/signup
+          - /auth/v1/validate
           - /auth/v1/refreshToken
         strip_path: false
