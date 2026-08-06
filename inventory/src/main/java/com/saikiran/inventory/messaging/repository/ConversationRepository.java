@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ConversationRepository extends JpaRepository<Conversation,Long> {
+public interface ConversationRepository extends JpaRepository<Conversation, Long> {
 
     @Query("""
         SELECT c
@@ -32,7 +32,9 @@ public interface ConversationRepository extends JpaRepository<Conversation,Long>
             Long businessTwoId
     );
 
+    Optional<Conversation> findByBusinessOne_BusinessIdAndBusinessTwo_BusinessId(Long b1, Long b2);
+
     Optional<Conversation> findConversationById(Long id);
 
-    List<Conversation> findByBusinessOne_BusinessIdOrBusinessTwo_BusinessIdOrderByLastMessageTimeDesc(Long businessOne,Long businessTwo);
+    List<Conversation> findByBusinessOne_BusinessIdOrBusinessTwo_BusinessIdOrderByLastMessageTimeDesc(Long businessOne, Long businessTwo);
 }

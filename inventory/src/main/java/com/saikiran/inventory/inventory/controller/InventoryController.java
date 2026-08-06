@@ -146,6 +146,29 @@ public class InventoryController {
         return ResponseEntity.ok("updated the stock request");
     }
 
+    @PostMapping("/stock-requests/{requestId}/counter")
+    @Operation(summary = "Counter stock request", description = "Counters a pending stock request by creating a new pending request with new terms.")
+    public ResponseEntity<StockRequestResponse> counterRequest(
+            @RequestHeader("X-Business-Id")
+            @Parameter(description = "Active business id", required = true, example = "10")
+            Long businessId,
+            @RequestHeader("X-User-Id")
+            @Parameter(description = "Authenticated user id", required = true, example = "1")
+            Long userId,
+            @PathVariable
+            @Parameter(description = "Stock request id", required = true, example = "100")
+            Long requestId,
+            @RequestParam(required = false)
+            @Parameter(description = "Counter offered unit price", example = "115.00")
+            java.math.BigDecimal counterUnitPrice,
+            @RequestParam(required = false)
+            @Parameter(description = "Counter quantity", example = "10")
+            Integer counterQuantity) {
+
+        return ResponseEntity.ok(stockRequestService.counterStockRequest(businessId, requestId, counterUnitPrice, counterQuantity));
+    }
+
+
 
     //searching product
     @GetMapping("/search")

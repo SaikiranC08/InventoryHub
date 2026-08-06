@@ -1,7 +1,7 @@
 package com.saikiran.inventory.messaging.entity;
 
-
 import com.saikiran.inventory.business.entity.Business;
+import com.saikiran.inventory.inventory.entities.internal.StockRequest;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,6 +33,18 @@ public class Message {
 
     @Column(nullable = false)
     private String content;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private MessageType type = MessageType.USER;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "stock_request_id")
+    private StockRequest stockRequest;
+
+    @Column(name = "client_correlation_id")
+    private String clientCorrelationId;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

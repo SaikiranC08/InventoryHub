@@ -56,6 +56,9 @@ class InventoryControllerTest {
     @MockitoBean
     private InventorySearchService inventorySearchService;
 
+    @MockitoBean
+    private com.saikiran.inventory.inventory.service.StockMovementService stockMovementService;
+
     @Test
     void shouldAddInventoryStockWhenExternalSupplierProvidesStock() throws Exception {
 

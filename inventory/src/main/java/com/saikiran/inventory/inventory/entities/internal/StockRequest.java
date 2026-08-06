@@ -1,8 +1,8 @@
 package com.saikiran.inventory.inventory.entities.internal;
 
-
 import com.saikiran.inventory.business.entity.Business;
 import com.saikiran.inventory.inventory.enums.StockRequestStatus;
+import com.saikiran.inventory.messaging.entity.Conversation;
 import com.saikiran.inventory.product.entities.ProductVariant;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -27,20 +27,26 @@ public class StockRequest {
     private Long stockRequestId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "to_business",nullable = false)
+    @JoinColumn(name = "to_business", nullable = false)
     private Business toBusiness;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "from_business",nullable = false)
+    @JoinColumn(name = "from_business", nullable = false)
     private Business fromBusiness;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_variant",nullable = false)
+    @JoinColumn(name = "product_variant", nullable = false)
     private ProductVariant productVariant;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "conversation_id")
+    private Conversation conversation;
 
     private Integer quantity;
     private BigDecimal offeredUnitPrice;
     private BigDecimal offeredTotalPrice;
+
+    @Enumerated(EnumType.STRING)
     private StockRequestStatus status;
 
     @CreationTimestamp
@@ -48,6 +54,4 @@ public class StockRequest {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
-
-
 }

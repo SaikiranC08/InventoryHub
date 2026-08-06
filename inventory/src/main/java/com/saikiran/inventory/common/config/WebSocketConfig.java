@@ -19,9 +19,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry stompEndpointRegistry){
         stompEndpointRegistry.addEndpoint("/ws")
+                .setAllowedOriginPatterns("*")
                 .addInterceptors(businessHandshakeInterceptor)
-                .setHandshakeHandler(businessHandshakeHandler);
+                .setHandshakeHandler(businessHandshakeHandler)
+                .withSockJS();
     }
+
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry){

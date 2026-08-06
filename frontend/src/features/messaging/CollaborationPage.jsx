@@ -2,10 +2,10 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { ROUTES } from '@/constants/routes';
-import { getBusinessId } from '@/utils/tokenStorage';
+import { getAccessToken, getBusinessId } from '@/utils/tokenStorage';
+
 import { businessApi } from '@/api/business.api';
 import { messagingApi } from '@/api/messaging.api';
-import { inventoryApi } from '@/api/inventory.api';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,38 +16,19 @@ import {
   Building2,
   LayoutDashboard,
   Boxes,
-  ShoppingCart,
-  Truck,
-  BarChart3,
-  Settings,
   LogOut,
-  ArrowUpDown,
   Search,
-  RefreshCw,
   Send,
   MessageSquare,
   Package,
-  Clock,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
+  Loader2,
   Menu,
-  ChevronRight,
-  TrendingUp,
-  Sliders,
-  DollarSign,
-  Activity,
-  History,
   X,
-  FileText,
-  HelpCircle,
-  Phone,
-  Mail,
-  UserCheck,
-  Calendar,
-  ThumbsUp,
-  ThumbsDown,
+  ChevronLeft,
+  History,
+  ArrowUpDown,
 } from 'lucide-react';
+
 
 export const CollaborationPage = () => {
   const navigate = useNavigate();
@@ -64,32 +45,26 @@ export const CollaborationPage = () => {
   const [messages, setMessages] = useState([]);
   const [loadingConv, setLoadingConv] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
-  
-  // Negotiation / request context
-  const [activeRequest, setActiveRequest] = useState(null);
-  const [negotiationSummary, setNegotiationSummary] = useState(null);
-  const [otherBusinessInventory, setOtherBusinessInventory] = useState([]);
-  const [loadingContext, setLoadingContext] = useState(false);
+
+  // Pagination for WhatsApp infinite scroll on scroll up
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const chatContainerRef = useRef(null);
+  const messagesEndRef = useRef(null);
 
   // WebSockets / live features
   const [connected, setConnected] = useState(false);
   const [reconnecting, setReconnecting] = useState(false);
-  const [typing, setTyping] = useState(false);
   const stompClientRef = useRef(null);
 
   // Search & filters
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState('ALL'); // ALL, UNREAD, NEGOTIATIONS
+  const [activeFilter, setActiveFilter] = useState('ALL'); // ALL, UNREAD
   const [messageText, setMessageText] = useState('');
-  const messagesEndRef = useRef(null);
 
-  // Responsive UI toggles
+  // Mobile sidebar toggle
   const [showLeftSidebarMobile, setShowLeftSidebarMobile] = useState(false);
-  const [showRightSidebarMobile, setShowRightSidebarMobile] = useState(false);
-
-  // Counter offer state
-  const [counterOpen, setCounterOpen] = useState(false);
-  const [counterPrice, setCounterPrice] = useState('');
 
   // ─── 1. Resolve Active Business ───────────────────────────────────────────
   useEffect(() => {
@@ -113,6 +88,12 @@ export const CollaborationPage = () => {
     resolveBusiness();
   }, [selectedBusinessId, navigate, initializeUserBusiness]);
 
+  // Ref to track latest active conversation in callbacks without causing reconnect loops
+  const activeConvRef = useRef(activeConv);
+  useEffect(() => {
+    activeConvRef.current = activeConv;
+  }, [activeConv]);
+
   // ─── 2. Fetch Conversations Summary ────────────────────────────────────────
   const fetchConversations = useCallback(async (selectId = null) => {
     if (!business) return;
@@ -121,19 +102,16 @@ export const CollaborationPage = () => {
       const data = await messagingApi.getConversations();
       setConversations(data || []);
 
-      // If active conversation is not selected, try to restore or select the first one
       if (selectId) {
         const match = data.find((c) => c.conversationId === selectId);
         if (match) setActiveConv(match);
-      } else if (data.length > 0 && !activeConv) {
-        setActiveConv(data[0]);
       }
     } catch (err) {
       toast.error('Failed to load conversations');
     } finally {
       setLoadingConv(false);
     }
-  }, [business, activeConv]);
+  }, [business]);
 
   useEffect(() => {
     if (business) {
@@ -144,77 +122,74 @@ export const CollaborationPage = () => {
   // ─── 3. Handle Navigation State Entry (Marketplace Search -> Chat) ──────────
   useEffect(() => {
     if (business && location.state && location.state.otherBusinessId) {
-      const { otherBusinessId, otherBusinessName, startProduct } = location.state;
-      
-      // Clear location state to prevent loop on refreshes
+      const { otherBusinessId, otherBusinessName } = location.state;
+
+      // Clear location state to prevent duplicate creation on refreshes
       window.history.replaceState({}, document.title);
 
       // Check if conversation already exists
       const match = conversations.find((c) => c.otherBusinessId === otherBusinessId);
       if (match) {
         setActiveConv(match);
-        if (startProduct) {
-          setupNewProductNegotiation(startProduct);
-        }
       } else {
-        // Create temporary/mock conversation shell until first message is sent
+        // Create temporary conversation shell until first message is sent
         const tempConv = {
-          conversationId: null, // null triggers creation on sendMessage
+          conversationId: null,
           otherBusinessId,
           otherBusinessName,
-          lastMessage: startProduct ? `Hi, I am interested in requesting ${startProduct.productName}` : 'Starting conversation...',
+          lastMessage: 'Starting conversation...',
           lastMessageTime: new Date().toISOString(),
           unreadCount: 0,
           isTemporary: true,
         };
         setConversations((prev) => [tempConv, ...prev]);
         setActiveConv(tempConv);
-        if (startProduct) {
-          setupNewProductNegotiation(startProduct);
-        }
       }
     }
   }, [business, location.state, conversations]);
 
-  const setupNewProductNegotiation = (product) => {
-    setActiveRequest({
-      productVariantId: product.variantId,
-      sku: product.sku,
-      productName: product.productName,
-      quantity: product.quantity,
-      offeredUnitPrice: product.currentPrice,
-      status: 'PENDING',
-    });
-    setNegotiationSummary({
-      offeredPrice: product.currentPrice,
-      quantity: product.quantity,
-      total: product.currentPrice * product.quantity,
-    });
-  };
-
-  // ─── 4. Fetch Message History & Context ─────────────────────────────────────
+  // ─── 4. Fetch Message History (Page 0) ──────────────────────────────────
   const fetchMessages = useCallback(async (conv) => {
     if (!conv) return;
     try {
       setLoadingMessages(true);
+      setPage(0);
+      setHasMore(true);
+
       if (conv.isTemporary) {
         setMessages([]);
         setLoadingMessages(false);
         return;
       }
-      const data = await messagingApi.getConversationMessages(conv.conversationId, 0, 50);
-      // Backend returns newest first, reverse to display chronologically
-      setMessages((data.content || []).reverse());
-      
-      // Mark as read
+
+      // Fetch page 0 with size 20
+      const data = await messagingApi.getConversationMessages(conv.conversationId, 0, 20);
+      const fetchedMsgs = (data.content || []).reverse();
+      setMessages(fetchedMsgs);
+      setHasMore(!data.last);
+
+      // Auto-scroll to bottom on initial message load
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+      }, 50);
+
+      // Send markAsRead PATCH API request for the latest message shown on screen
       if (data.content?.length > 0) {
-        const lastMsg = data.content[0]; // first item in response content is newest
-        await messagingApi.markAsRead(conv.conversationId, lastMsg.messageId);
-        // Reset unread count locally
-        setConversations((prev) =>
-          prev.map((c) => (c.conversationId === conv.conversationId ? { ...c, unreadCount: 0 } : c))
-        );
+        const latestMsgOnScreen = data.content[0]; // data.content is ordered desc (latest first)
+        if (latestMsgOnScreen.messageId) {
+          try {
+            await messagingApi.markAsRead(conv.conversationId, latestMsgOnScreen.messageId);
+          } catch (e) {
+            console.error('Failed to send markAsRead API request:', e);
+          }
+        }
       }
+
+      // Set unreadCount to 0 for active conversation thread
+      setConversations((prev) =>
+        prev.map((c) => (c.conversationId === conv.conversationId ? { ...c, unreadCount: 0 } : c))
+      );
+
     } catch {
       toast.error('Failed to load message history');
     } finally {
@@ -222,61 +197,60 @@ export const CollaborationPage = () => {
     }
   }, []);
 
-  const fetchBusinessContext = useCallback(async (otherBusinessId) => {
-    if (!otherBusinessId) return;
-    try {
-      setLoadingContext(true);
-      // Fetch snapshot inventory of the other business
-      const data = await inventoryApi.getInventory();
-      // Filter list representing target business's stock (for demo fallback or specific mapping if we had cross-access)
-      setOtherBusinessInventory(data.slice(0, 4));
-    } catch {
-      setOtherBusinessInventory([]);
-    } finally {
-      setLoadingContext(false);
-    }
-  }, []);
-
   useEffect(() => {
     if (activeConv) {
       fetchMessages(activeConv);
-      fetchBusinessContext(activeConv.otherBusinessId);
-      // Look for active stock requests with this business
-      fetchActiveRequests(activeConv.otherBusinessId);
     }
-  }, [activeConv, fetchMessages, fetchBusinessContext]);
+  }, [activeConv, fetchMessages]);
 
-  const fetchActiveRequests = async (otherId) => {
+  // ─── 5. Load Older Messages (Pagination on Scroll Up) ─────────────────────
+  const loadOlderMessages = async () => {
+    if (!activeConv || activeConv.isTemporary || loadingMore || !hasMore || loadingMessages) return;
+
+    const container = chatContainerRef.current;
+    const prevScrollHeight = container ? container.scrollHeight : 0;
+    const nextPage = page + 1;
+
     try {
-      const data = await inventoryApi.getStockRequests();
-      // Find request between activeBusiness and otherBusiness
-      const current = data?.find(
-        (r) =>
-          (r.fromBusinessId === business?.businessId && r.toBusinessId === otherId) ||
-          (r.fromBusinessId === otherId && r.toBusinessId === business?.businessId)
-      );
-      if (current) {
-        setActiveRequest(current);
-        setNegotiationSummary({
-          offeredPrice: current.offeredUnitPrice,
-          quantity: current.quantity,
-          total: current.offeredTotalPrice,
+      setLoadingMore(true);
+      const data = await messagingApi.getConversationMessages(activeConv.conversationId, nextPage, 20);
+      const olderMsgs = (data.content || []).reverse();
+
+      if (olderMsgs.length > 0) {
+        setMessages((prev) => [...olderMsgs, ...prev]);
+        setPage(nextPage);
+        setHasMore(!data.last);
+
+        // Preserve exact scroll position so user doesn't jump when top messages load
+        requestAnimationFrame(() => {
+          if (container) {
+            container.scrollTop = container.scrollHeight - prevScrollHeight;
+          }
         });
       } else {
-        setActiveRequest(null);
-        setNegotiationSummary(null);
+        setHasMore(false);
       }
-    } catch {
-      setActiveRequest(null);
+    } catch (err) {
+      console.error('Failed to load older messages:', err);
+    } finally {
+      setLoadingMore(false);
     }
   };
 
-  // ─── 5. WebSocket Connections (SockJS + STOMP) ──────────────────────────────────
+  const handleScroll = (e) => {
+    const { scrollTop } = e.target;
+    if (scrollTop <= 30 && hasMore && !loadingMore && !loadingMessages) {
+      loadOlderMessages();
+    }
+  };
+
+  // ─── 6. WebSocket Connection (SockJS + STOMP) ───────────────────────────────
   useEffect(() => {
     if (!business) return;
 
     setReconnecting(true);
-    const socket = new SockJS('http://localhost:8000/ws');
+    const token = getAccessToken();
+    const socket = new SockJS(`http://localhost:8000/ws?jwt=${token}`);
     const client = new Client({
       webSocketFactory: () => socket,
       connectHeaders: {
@@ -291,21 +265,20 @@ export const CollaborationPage = () => {
     client.onConnect = () => {
       setConnected(true);
       setReconnecting(false);
-      
-      // Subscribe to private business notifications
+
       client.subscribe(`/user/queue/messages`, (msg) => {
         const payload = JSON.parse(msg.body);
-        
+        const currentActive = activeConvRef.current;
+
         // Match message if it belongs to active conversation
-        const isMatch = activeConv && (
-          payload.conversationId === activeConv.conversationId ||
-          (activeConv.isTemporary && payload.senderBusinessId === business.businessId) ||
-          (activeConv.isTemporary && payload.senderBusinessId === activeConv.otherBusinessId)
+        const isMatch = currentActive && (
+          payload.conversationId === currentActive.conversationId ||
+          (currentActive.isTemporary && payload.senderBusinessId === business.businessId) ||
+          (currentActive.isTemporary && payload.senderBusinessId === currentActive.otherBusinessId)
         );
 
         if (isMatch) {
-          // If conversation was temporary, resolve the real conversationId
-          if (activeConv.isTemporary) {
+          if (currentActive.isTemporary) {
             setActiveConv((prev) => ({
               ...prev,
               conversationId: payload.conversationId,
@@ -315,35 +288,62 @@ export const CollaborationPage = () => {
           }
 
           setMessages((prev) => {
-            // Deduplicate optimistic messages
             const exists = prev.some(
-              (m) => m.messageId === payload.messageId || (m.content === payload.content && !m.messageId)
+              (m) =>
+                (payload.clientCorrelationId && m.clientCorrelationId === payload.clientCorrelationId) ||
+                (payload.messageId && m.messageId === payload.messageId)
             );
             if (exists) {
               return prev.map((m) =>
-                m.content === payload.content && !m.messageId ? payload : m
+                (payload.clientCorrelationId && m.clientCorrelationId === payload.clientCorrelationId) ||
+                (payload.messageId && m.messageId === payload.messageId)
+                  ? payload
+                  : m
               );
             }
             return [...prev, payload];
           });
 
-          if (payload.conversationId) {
-            messagingApi.markAsRead(payload.conversationId, payload.messageId);
-          }
-        } else {
-          // Play notification and increment unread count for other conversations
+          // Auto-scroll to bottom on new message if near bottom
+          setTimeout(() => {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+          }, 50);
+
+          // Update conversation last message summary in sidebar
           setConversations((prev) =>
             prev.map((c) =>
               c.conversationId === payload.conversationId
                 ? {
                     ...c,
-                    unreadCount: c.unreadCount + 1,
                     lastMessage: payload.content,
                     lastMessageTime: payload.sentAt,
                   }
                 : c
             )
           );
+
+          if (payload.conversationId && payload.messageId) {
+            messagingApi.markAsRead(payload.conversationId, payload.messageId);
+          }
+        } else {
+          setConversations((prev) => {
+            const exists = prev.some((c) => c.conversationId === payload.conversationId);
+            if (exists) {
+              return prev.map((c) =>
+                c.conversationId === payload.conversationId
+                  ? {
+                      ...c,
+                      unreadCount: (c.unreadCount || 0) + 1,
+                      lastMessage: payload.content,
+                      lastMessageTime: payload.sentAt,
+                    }
+                  : c
+              );
+            } else {
+              fetchConversations();
+              return prev;
+            }
+          });
         }
       });
     };
@@ -365,14 +365,15 @@ export const CollaborationPage = () => {
     return () => {
       client.deactivate();
     };
-  }, [business, activeConv, fetchConversations]);
+  }, [business, fetchConversations]);
 
-  // ─── Refetch on focus or reconnect ──────────────────────────────────────────
+  // Refetch on focus or reconnect
   useEffect(() => {
     const handleFocus = () => {
-      if (activeConv && !activeConv.isTemporary) {
-        fetchMessages(activeConv);
-        fetchConversations(activeConv.conversationId);
+      const currentActive = activeConvRef.current;
+      if (currentActive && !currentActive.isTemporary) {
+        fetchMessages(currentActive);
+        fetchConversations(currentActive.conversationId);
       }
     };
     window.addEventListener('focus', handleFocus);
@@ -386,29 +387,36 @@ export const CollaborationPage = () => {
     }
   }, [connected]);
 
-  // ─── 6. Message actions ───────────────────────────────────────────────────
+  // ─── 7. Send Chat Message ────────────────────────────────────────────────
   const handleSendMessage = async (e) => {
     if (e) e.preventDefault();
     if (!messageText.trim() || !activeConv) return;
 
-    const currentMsgText = messageText;
+    const currentMsgText = messageText.trim();
     setMessageText('');
+    const correlationId = `corr-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
     // Create optimistic message object
     const optimisticMsg = {
       messageId: null,
       senderBusinessId: business.businessId,
       content: currentMsgText,
+      clientCorrelationId: correlationId,
       sentAt: new Date().toISOString(),
     };
 
     // Update screen instantly
     setMessages((prev) => [...prev, optimisticMsg]);
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 50);
 
     const payload = {
       conversationId: activeConv.isTemporary ? null : activeConv.conversationId,
+      senderBusinessId: business.businessId,
       receiverBusinessId: activeConv.otherBusinessId,
       content: currentMsgText,
+      clientCorrelationId: correlationId,
       sentAt: new Date().toISOString(),
     };
 
@@ -418,165 +426,210 @@ export const CollaborationPage = () => {
           destination: '/app/chat.send',
           body: JSON.stringify(payload),
         });
-        
-        // Refresh conversations to update sidebar summaries
+
         if (activeConv.isTemporary) {
           setTimeout(() => fetchConversations(), 1500);
         }
       } else {
         toast.error('Disconnected from chat server. Reconnecting...');
-        // Remove optimistic message on disconnect
-        setMessages((prev) => prev.filter((m) => m !== optimisticMsg));
+        setMessages((prev) => prev.filter((m) => m.clientCorrelationId !== correlationId));
       }
     } catch {
       toast.error('Failed to send message');
-      setMessages((prev) => prev.filter((m) => m !== optimisticMsg));
+      setMessages((prev) => prev.filter((m) => m.clientCorrelationId !== correlationId));
     }
   };
 
+  const handleSelectConversation = useCallback(async (conv) => {
+    if (!conv) return;
+    setActiveConv(conv);
 
-  const handleUpdateStockRequest = async (status) => {
-    if (!activeRequest) return;
-    try {
-      await inventoryApi.updateStockRequest(activeRequest.requestId, status);
-      toast.success(`Request ${status === 'APPROVED' ? 'approved' : 'rejected'}.`);
-      fetchActiveRequests(activeConv.otherBusinessId);
-    } catch (err) {
-      toast.error(err?.message || 'Failed to update request.');
+    if (!conv.isTemporary && conv.conversationId) {
+      // Clear unread badge in local UI immediately
+      setConversations((prev) =>
+        prev.map((c) => (c.conversationId === conv.conversationId ? { ...c, unreadCount: 0 } : c))
+      );
     }
-  };
+  }, []);
 
-  const handleCounterOffer = async () => {
-    if (!counterPrice || !activeRequest) return;
-    // Counter offer implementation: sends counter negotiation message
-    const payload = {
-      conversationId: activeConv.conversationId,
-      receiverBusinessId: activeConv.otherBusinessId,
-      content: `[NEGOTIATION] Counter offered unit price: ₹${counterPrice} for ${activeRequest.quantity} units`,
-      sentAt: new Date().toISOString(),
-    };
-    try {
-      stompClientRef.current.publish({
-        destination: '/app/chat.send',
-        body: JSON.stringify(payload),
-      });
-      setCounterOpen(false);
-      setCounterPrice('');
-      toast.success('Counter offer sent!');
-    } catch {
-      toast.error('Failed to send counter offer');
-    }
-  };
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  // ─── Filter conversations list ──────────────────────────────────────────
+  // ─── Filter Conversations List ──────────────────────────────────────────
   const filteredConversations = conversations.filter((c) => {
     const q = searchQuery.toLowerCase();
     const matchesSearch = c.otherBusinessName.toLowerCase().includes(q) || c.lastMessage?.toLowerCase().includes(q);
     if (activeFilter === 'UNREAD') return matchesSearch && c.unreadCount > 0;
-    if (activeFilter === 'NEGOTIATIONS') return matchesSearch && c.lastMessage?.includes('[NEGOTIATION]');
     return matchesSearch;
   });
-
-  const isNegMsg = (content) => content?.startsWith('[NEGOTIATION]');
-  const cleanMsgContent = (content) => content?.replace('[NEGOTIATION]', '').trim();
 
   return (
     <div className="font-sans text-slate-800 antialiased flex h-screen overflow-hidden bg-[#F8FAFC]">
 
-      {/* ── Sidebar ─────────────────────────────────────────────────────── */}
+      {/* ── Desktop Left Navigation Sidebar ─────────────────────────── */}
       <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 flex-col p-4 gap-2 bg-white border-r border-slate-200/80 shadow-sm z-40">
         <div className="px-3 py-2 flex items-center gap-2 mb-6">
-          <div className="bg-blue-600 p-2 rounded-xl text-white shadow-md">
-            <Building2 className="h-5 w-5" />
+          <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-sm shadow-md shadow-blue-500/20">
+            IH
           </div>
-          <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            InventoryHub
-          </span>
+          <div>
+            <h1 className="font-black text-sm text-slate-900 tracking-tight leading-none">InventoryHub</h1>
+            <p className="text-[10px] text-slate-400 font-medium mt-0.5">Enterprise Portal</p>
+          </div>
         </div>
-        <nav className="flex-1 flex flex-col gap-1 overflow-y-auto">
-          <button onClick={() => navigate(ROUTES.DASHBOARD)} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left">
-            <LayoutDashboard className="h-4 w-4" /> Dashboard
-          </button>
-          <button onClick={() => navigate(ROUTES.INVENTORY)} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left">
-            <Boxes className="h-4 w-4" /> Inventory
-          </button>
-          <a className="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all" href="#">
-            <ShoppingCart className="h-4 w-4" /> Orders
-          </a>
-          <a className="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all" href="#">
-            <Truck className="h-4 w-4" /> Suppliers
-          </a>
-          <a className="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all" href="#">
-            <BarChart3 className="h-4 w-4" /> Reports
-          </a>
-          <button onClick={() => navigate(ROUTES.STOCK_HISTORY)} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left">
-            <History className="h-4 w-4" /> Stock History
-          </button>
-          <button onClick={() => navigate(ROUTES.MESSAGING)} className="flex items-center gap-3 w-full px-3 py-2.5 bg-blue-50 text-blue-700 font-semibold rounded-xl transition-all text-left">
-            <MessageSquare className="h-4 w-4" /> Collaboration
-          </button>
-        </nav>
-        <div className="mt-auto border-t border-slate-100 pt-4 flex flex-col gap-1">
-          <button onClick={() => navigate(ROUTES.BUSINESS_SELECT)} className="flex items-center justify-between w-full px-3 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl border border-slate-200/60 shadow-sm transition-all">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
-                <Building2 className="h-4 w-4 text-blue-600" />
+
+        {businessLoading ? (
+          <Skeleton className="h-12 w-full rounded-2xl mb-4" />
+        ) : (
+          <div className="px-3 py-2 bg-slate-50 border border-slate-200/60 rounded-2xl mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2.5 truncate">
+              <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs shrink-0">
+                {business?.businessName?.substring(0, 1) || 'B'}
               </div>
-              <div className="min-w-0">
-                <p className="font-bold text-xs text-slate-800 truncate">{business?.businessName}</p>
-                <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">{business?.businessType}</p>
+              <div className="truncate">
+                <p className="text-xs font-bold text-slate-900 truncate">{business?.businessName}</p>
+                <p className="text-[9px] text-slate-400 font-mono">ID: {business?.businessId}</p>
               </div>
             </div>
-            <ArrowUpDown className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-          </button>
-          <a className="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all mt-2" href="#">
-            <Settings className="h-4 w-4" /> Settings
-          </a>
-          <button onClick={logout} className="flex items-center gap-3 px-3 py-2.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all text-left w-full">
-            <LogOut className="h-4 w-4" /> Logout
-          </button>
-        </div>
-      </aside>
-
-      {/* ── Main Workspace Area ─────────────────────────────────────────── */}
-      <main className="flex-1 ml-0 md:ml-64 flex flex-col h-screen overflow-hidden">
-        
-        {/* Reconnect Banner */}
-        {reconnecting && (
-          <div className="bg-amber-500 text-white text-xs font-bold text-center py-2 flex items-center justify-center gap-2 z-50">
-            <RefreshCw className="h-3 w-3 animate-spin" />
-            Reconnecting to negotiation server...
+            <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[9px] font-black shrink-0">
+              Active
+            </Badge>
           </div>
         )}
 
-        {/* 3-Column Desktop Layout */}
-        <div className="flex-1 flex overflow-hidden">
+        <nav className="flex-1 space-y-1">
+          <Button
+            onClick={() => navigate(ROUTES.DASHBOARD)}
+            variant="ghost"
+            className="w-full justify-start text-xs font-semibold text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl py-2.5"
+          >
+            <LayoutDashboard className="mr-2.5 h-4 w-4" />
+            Dashboard
+          </Button>
 
-          {/* ── LEFT SIDEBAR: Conversation List ─────────────────────────── */}
-          <div className="w-80 border-r border-slate-200 bg-white flex flex-col h-full shrink-0">
+          <Button
+            onClick={() => navigate(ROUTES.INVENTORY)}
+            variant="ghost"
+            className="w-full justify-start text-xs font-semibold text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl py-2.5"
+          >
+            <Boxes className="mr-2.5 h-4 w-4" />
+            Inventory & Stock
+          </Button>
+
+          <Button
+            onClick={() => navigate('/collaboration')}
+            className="w-full justify-start text-xs font-bold bg-blue-600 text-white rounded-xl py-2.5 shadow-md shadow-blue-500/10"
+          >
+            <MessageSquare className="mr-2.5 h-4 w-4" />
+            Business Chat
+          </Button>
+        </nav>
+
+        <div className="pt-4 border-t border-slate-100">
+          <Button
+            onClick={logout}
+            variant="ghost"
+            className="w-full justify-start text-xs font-semibold text-red-600 hover:bg-red-50 rounded-xl py-2.5"
+          >
+            <LogOut className="mr-2.5 h-4 w-4" />
+            Sign Out
+          </Button>
+        </div>
+      </aside>
+
+      {/* ── Mobile Sidebar Drawer ───────────────────────────────────────── */}
+      {showLeftSidebarMobile && (
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          <div
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"
+            onClick={() => setShowLeftSidebarMobile(false)}
+          />
+          <aside className="relative flex flex-col w-72 max-w-[85%] h-full p-4 gap-2 bg-white shadow-2xl z-10 animate-slideRight">
+            <div className="px-3 py-2 flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="bg-blue-600 p-2 rounded-xl text-white shadow-md">
+                  <Building2 className="h-5 w-5" />
+                </div>
+                <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  InventoryHub
+                </span>
+              </div>
+              <button
+                onClick={() => setShowLeftSidebarMobile(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <nav className="flex-1 flex flex-col gap-1 overflow-y-auto">
+              <button onClick={() => { setShowLeftSidebarMobile(false); navigate(ROUTES.DASHBOARD); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-sm font-medium">
+                <LayoutDashboard className="h-4 w-4" /> Dashboard
+              </button>
+              <button onClick={() => { setShowLeftSidebarMobile(false); navigate(ROUTES.INVENTORY); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-sm font-medium">
+                <Boxes className="h-4 w-4" /> Inventory
+              </button>
+              <button onClick={() => { setShowLeftSidebarMobile(false); navigate(ROUTES.STOCK_HISTORY); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-sm font-medium">
+                <History className="h-4 w-4" /> Stock History
+              </button>
+              <a className="flex items-center gap-3 px-3 py-2.5 bg-blue-50 text-blue-700 rounded-xl font-semibold text-sm" href="#">
+                <MessageSquare className="h-4 w-4" /> Business Chat
+              </a>
+            </nav>
+
+            <div className="mt-auto border-t border-slate-100 pt-4 flex flex-col gap-2">
+              <button onClick={() => { setShowLeftSidebarMobile(false); navigate(ROUTES.BUSINESS_SELECT); }} className="flex items-center justify-between w-full px-3 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl border border-slate-200/60 shadow-sm transition-all active:scale-[0.98]">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
+                    <Building2 className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div className="min-w-0 text-left">
+                    <p className="font-bold text-xs text-slate-800 truncate">{business?.businessName}</p>
+                    <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">{business?.businessType}</p>
+                  </div>
+                </div>
+                <ArrowUpDown className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+              </button>
+              <button onClick={logout} className="flex items-center gap-3 px-3 py-2.5 text-red-600 hover:bg-red-50 rounded-xl transition-all text-left w-full text-sm font-semibold">
+                <LogOut className="h-4 w-4" /> Sign Out
+              </button>
+            </div>
+          </aside>
+        </div>
+      )}
+
+      {/* ── Main Workspace ────────────────────────────────────────────── */}
+      <main className="flex-1 md:pl-64 flex h-full overflow-hidden w-full">
+        <div className="flex-1 flex h-full w-full overflow-hidden">
+
+          {/* ── B2B Conversation List Panel ───────────────────────────── */}
+          <div className={`w-full md:w-80 border-r border-slate-200 bg-white flex flex-col h-full shrink-0 ${
+            activeConv ? 'hidden md:flex' : 'flex'
+          }`}>
             {/* Search */}
             <div className="p-4 border-b border-slate-100 space-y-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <input
-                  className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-sm"
-                  placeholder="Search negotiated businesses..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowLeftSidebarMobile(true)}
+                  className="p-1.5 md:hidden text-slate-600 hover:bg-slate-100 rounded-xl"
+                >
+                  <Menu className="h-5 w-5" />
+                </button>
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-sm"
+                    placeholder="Search business chats..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
               </div>
 
-              {/* Filters */}
-              <div className="flex gap-1 overflow-x-auto pb-1">
-                {['ALL', 'UNREAD', 'NEGOTIATIONS'].map((f) => (
+              {/* Filter Tabs */}
+              <div className="flex gap-1">
+                {['ALL', 'UNREAD'].map((f) => (
                   <button
                     key={f}
                     onClick={() => setActiveFilter(f)}
-                    className={`px-2.5 py-1 text-[10px] font-black rounded-lg transition-all ${
+                    className={`px-3 py-1 text-[10px] font-black rounded-lg transition-all ${
                       activeFilter === f
                         ? 'bg-blue-600 text-white shadow-sm'
                         : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
@@ -588,7 +641,8 @@ export const CollaborationPage = () => {
               </div>
             </div>
 
-            {/* List */}
+
+            {/* Conversation List */}
             <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
               {loadingConv ? (
                 Array.from({ length: 4 }).map((_, i) => (
@@ -606,7 +660,7 @@ export const CollaborationPage = () => {
                     size="sm"
                     className="mt-2 bg-blue-600 text-white text-[10px] rounded-lg"
                   >
-                    Open Marketplace
+                    Find Businesses in Marketplace
                   </Button>
                 </div>
               ) : (
@@ -615,7 +669,7 @@ export const CollaborationPage = () => {
                   return (
                     <div
                       key={c.otherBusinessId}
-                      onClick={() => setActiveConv(c)}
+                      onClick={() => handleSelectConversation(c)}
                       className={`p-4 cursor-pointer transition-all flex items-start gap-3 relative ${
                         isActive ? 'bg-blue-50/50 border-l-4 border-blue-600' : 'hover:bg-slate-50'
                       }`}
@@ -635,7 +689,7 @@ export const CollaborationPage = () => {
                           )}
                         </div>
                         <p className="text-[10px] text-slate-500 truncate mt-0.5">
-                          {isNegMsg(c.lastMessage) ? '📑 Counter offer received' : c.lastMessage}
+                          {c.lastMessage}
                         </p>
                       </div>
                       {c.unreadCount > 0 && (
@@ -650,16 +704,26 @@ export const CollaborationPage = () => {
             </div>
           </div>
 
-          {/* ── CENTER PANEL: Chat & Context Workspace ────────────────── */}
-          <div className="flex-1 flex flex-col h-full bg-slate-50/50 relative overflow-hidden">
+          {/* ── WhatsApp-Style Plain Chat Workspace ─────────────────────── */}
+          <div className={`flex-1 flex flex-col h-full bg-slate-50/50 relative overflow-hidden ${
+            !activeConv ? 'hidden md:flex' : 'flex'
+          }`}>
             {activeConv ? (
               <>
-                {/* Top header */}
-                <div className="bg-white border-b border-slate-200/80 px-6 py-4 flex items-center justify-between shrink-0 shadow-sm z-10">
+                {/* Active Chat Header */}
+                <div className="bg-white border-b border-slate-200/80 px-4 sm:px-6 py-4 flex items-center justify-between shrink-0 shadow-sm z-10">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center font-bold text-indigo-700 shrink-0">
+                    <button
+                      onClick={() => setActiveConv(null)}
+                      className="md:hidden p-1.5 text-slate-500 hover:bg-slate-100 rounded-lg shrink-0"
+                      title="Back to chats"
+                    >
+                      <ChevronLeft className="h-5 w-5" />
+                    </button>
+                    <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center font-bold text-white shrink-0 shadow-sm">
                       {activeConv.otherBusinessName.substring(0, 2).toUpperCase()}
                     </div>
+
                     <div>
                       <h2 className="text-sm font-black text-slate-900 leading-tight">
                         {activeConv.otherBusinessName}
@@ -667,120 +731,38 @@ export const CollaborationPage = () => {
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <span className={`w-2 h-2 rounded-full ${connected ? 'bg-emerald-500' : 'bg-slate-300'}`} />
                         <span className="text-[10px] text-slate-400 font-medium">
-                          {connected ? 'Active workspace' : 'Offline'}
+                          {connected ? 'Connected' : 'Offline'}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <Button
-                      onClick={() => navigate(ROUTES.INVENTORY)}
-                      size="sm"
-                      variant="outline"
-                      className="h-8 text-[10px] font-black rounded-lg border-slate-200 text-slate-700"
-                    >
-                      Marketplace
-                    </Button>
-                    <button
-                      onClick={() => setShowRightSidebarMobile(!showRightSidebarMobile)}
-                      className="md:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-lg"
-                    >
-                      <Sliders className="h-4 w-4" />
-                    </button>
-                  </div>
+                  <Button
+                    onClick={() => navigate(ROUTES.INVENTORY)}
+                    size="sm"
+                    variant="outline"
+                    className="h-8 text-[10px] font-black rounded-lg border-slate-200 text-slate-700"
+                  >
+                    Search Marketplace
+                  </Button>
                 </div>
 
-                {/* ── Current Request Banner ──────────────────────────── */}
-                <div className="bg-white border-b border-slate-200/80 px-6 py-3 shrink-0 relative z-10 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
-                  {activeRequest ? (
-                    <>
-                      <div className="flex items-start gap-3">
-                        <div className="bg-indigo-50 p-2 rounded-xl border border-indigo-100 shrink-0">
-                          <Package className="h-5 w-5 text-indigo-600" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-black text-slate-800">
-                              {activeRequest.productName || `Variant #${activeRequest.productVariantId}`}
-                            </span>
-                            <Badge className="bg-amber-50 text-amber-700 border border-amber-200 text-[9px] font-black">
-                              {activeRequest.status || 'PENDING'}
-                            </Badge>
-                          </div>
-                          <p className="text-[10px] text-slate-400 font-mono mt-0.5">
-                            SKU: {activeRequest.sku || 'N/A'} · Qty: {activeRequest.quantity} · Price: ₹{activeRequest.offeredUnitPrice}
-                          </p>
-                        </div>
+                {/* ── CHAT MESSAGE STREAM WITH INFINITE SCROLL UP ───────────── */}
+                <div
+                  ref={chatContainerRef}
+                  onScroll={handleScroll}
+                  className="flex-1 overflow-y-auto p-6 space-y-4"
+                >
+                  {/* Loading Older Messages Spinner */}
+                  {loadingMore && (
+                    <div className="flex justify-center py-2">
+                      <div className="bg-white border border-slate-200/80 rounded-full px-3 py-1 text-[10px] text-slate-500 font-semibold flex items-center gap-1.5 shadow-sm">
+                        <Loader2 className="h-3 w-3 animate-spin text-blue-600" />
+                        <span>Loading older messages...</span>
                       </div>
-                      <div className="flex gap-2 shrink-0">
-                        {activeRequest.status === 'PENDING' && (
-                          <>
-                            <Button
-                              size="sm"
-                              onClick={() => handleUpdateStockRequest('APPROVED')}
-                              className="h-8 px-3 text-[10px] font-black bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg flex items-center gap-1"
-                            >
-                              <CheckCircle className="h-3 w-3" /> Approve
-                            </Button>
-                            <Button
-                              size="sm"
-                              onClick={() => handleUpdateStockRequest('REJECTED')}
-                              variant="outline"
-                              className="h-8 px-3 text-[10px] font-black border-red-200 text-red-600 hover:bg-red-50 rounded-lg flex items-center gap-1"
-                            >
-                              <XCircle className="h-3 w-3" /> Reject
-                            </Button>
-                          </>
-                        )}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setCounterOpen(!counterOpen)}
-                          className="h-8 px-3 text-[10px] font-black border-slate-200 text-slate-700 rounded-lg"
-                        >
-                          Counter Offer
-                        </Button>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="text-slate-400 text-xs flex items-center gap-2 py-1 font-medium">
-                      <AlertCircle className="h-4 w-4 text-slate-300" />
-                      <span>No active negotiation. Start by requesting stock in the Marketplace.</span>
                     </div>
                   )}
-                </div>
 
-                {/* Counter Offer Dialog Overlay */}
-                {counterOpen && (
-                  <div className="absolute inset-x-0 top-0 bg-white border-b border-blue-100 shadow-md p-4 z-20 space-y-3 animate-slideIn">
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs font-black text-slate-900">Propose Counter Offer</span>
-                      <button onClick={() => setCounterOpen(false)} className="p-1 hover:bg-slate-100 rounded-lg">
-                        <X className="h-4 w-4 text-slate-400" />
-                      </button>
-                    </div>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        placeholder="Offered price per unit (₹)"
-                        className="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                        value={counterPrice}
-                        onChange={(e) => setCounterPrice(e.target.value)}
-                      />
-                      <Button
-                        size="sm"
-                        onClick={handleCounterOffer}
-                        className="bg-blue-600 text-white rounded-xl text-xs px-4"
-                      >
-                        Send Counter
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {/* ── MESSAGE AREA ────────────────────────────────────────── */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-4">
                   {loadingMessages ? (
                     Array.from({ length: 4 }).map((_, i) => (
                       <div key={i} className="flex gap-2">
@@ -794,17 +776,16 @@ export const CollaborationPage = () => {
                   ) : messages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center text-slate-400 h-full gap-2">
                       <MessageSquare className="h-12 w-12 text-slate-200" />
-                      <p className="text-sm font-semibold">Beginning of discussion</p>
-                      <p className="text-xs text-slate-400">Ask questions, negotiate terms, or finalize orders.</p>
+                      <p className="text-sm font-semibold">Start of B2B Conversation</p>
+                      <p className="text-xs text-slate-400">Send a message to start communicating with {activeConv.otherBusinessName}.</p>
                     </div>
                   ) : (
                     messages.map((m, idx) => {
                       const isMe = m.senderBusinessId === business?.businessId;
-                      const isNegotiation = isNegMsg(m.content);
-                      
+
                       return (
                         <div
-                          key={m.messageId || idx}
+                          key={m.messageId || m.clientCorrelationId || idx}
                           className={`flex gap-3 max-w-[80%] ${isMe ? 'ml-auto flex-row-reverse' : 'mr-auto'}`}
                           style={{ animation: 'fadeUp 0.2s ease' }}
                         >
@@ -813,44 +794,13 @@ export const CollaborationPage = () => {
                           }`}>
                             {isMe ? 'ME' : activeConv.otherBusinessName.substring(0, 1).toUpperCase()}
                           </div>
-                          
+
                           <div className="space-y-1">
-                            {isNegotiation ? (
-                              /* Premium Negotiation Card Widget */
-                              <div className="bg-white border-2 border-blue-200 rounded-2xl p-4 shadow-sm space-y-3 min-w-[280px]">
-                                <div className="flex justify-between items-start">
-                                  <span className="text-[9px] font-black text-blue-600 uppercase tracking-wider">Negotiation Offer</span>
-                                  <Badge className="bg-blue-50 text-blue-700 border border-blue-200 text-[8px] font-black">
-                                    Counter Offer
-                                  </Badge>
-                                </div>
-                                <p className="text-xs font-bold text-slate-800">{cleanMsgContent(m.content)}</p>
-                                <div className="flex gap-1.5 pt-2 border-t border-slate-100">
-                                  <Button
-                                    size="sm"
-                                    onClick={() => handleUpdateStockRequest('APPROVED')}
-                                    className="flex-1 h-7 text-[9px] font-black bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
-                                  >
-                                    Accept
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => handleUpdateStockRequest('REJECTED')}
-                                    variant="outline"
-                                    className="flex-1 h-7 text-[9px] font-black border-red-200 text-red-600 hover:bg-red-50 rounded-lg"
-                                  >
-                                    Reject
-                                  </Button>
-                                </div>
-                              </div>
-                            ) : (
-                              /* Standard bubble message */
-                              <div className={`p-3 rounded-2xl shadow-sm text-xs leading-relaxed ${
-                                isMe ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-white text-slate-800 rounded-tl-none border border-slate-200/60'
-                              }`}>
-                                <p>{m.content}</p>
-                              </div>
-                            )}
+                            <div className={`p-3 rounded-2xl shadow-sm text-xs leading-relaxed ${
+                              isMe ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-white text-slate-800 rounded-tl-none border border-slate-200/60'
+                            }`}>
+                              <p>{m.content}</p>
+                            </div>
 
                             <p className="text-[9px] text-slate-400 font-medium text-right">
                               {new Date(m.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -863,133 +813,36 @@ export const CollaborationPage = () => {
                   <div ref={messagesEndRef} />
                 </div>
 
-                {/* ── MESSAGE COMPOSER ────────────────────────────────────── */}
-                <form
-                  onSubmit={handleSendMessage}
-                  className="bg-white border-t border-slate-200/80 px-6 py-4 shrink-0 flex items-center gap-3 relative z-10"
-                >
-                  <input
-                    className="flex-1 border border-slate-200 rounded-xl px-4 py-2.5 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm placeholder-slate-400"
-                    placeholder="Discuss pricing, availability or delivery..."
-                    value={messageText}
-                    onChange={(e) => setMessageText(e.target.value)}
-                  />
-                  <Button
-                    type="submit"
-                    disabled={!messageText.trim()}
-                    className="bg-blue-600 hover:bg-blue-700 text-white h-9 w-9 rounded-xl flex items-center justify-center shrink-0 shadow-md transition-all active:scale-95"
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </form>
+                {/* ── BOTTOM MESSAGE INPUT BAR ────────────────────────────── */}
+                <div className="p-4 bg-white border-t border-slate-200/80 shrink-0">
+                  <form onSubmit={handleSendMessage} className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all shadow-inner"
+                      placeholder={`Type a message to ${activeConv.otherBusinessName}...`}
+                      value={messageText}
+                      onChange={(e) => setMessageText(e.target.value)}
+                    />
+                    <Button
+                      type="submit"
+                      disabled={!messageText.trim()}
+                      className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl px-5 h-10 shadow-md shadow-blue-500/20 text-xs font-bold shrink-0 transition-all"
+                    >
+                      <Send className="h-4 w-4 mr-1.5" /> Send
+                    </Button>
+                  </form>
+                </div>
               </>
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center text-slate-400 gap-2 p-6">
+              <div className="flex flex-col items-center justify-center h-full text-slate-400 space-y-3">
                 <MessageSquare className="h-16 w-16 text-slate-200" />
-                <h3 className="font-bold text-slate-700 text-base">Select a discussion</h3>
-                <p className="text-xs text-slate-400 text-center max-w-xs">
-                  Pick a conversation from the sidebar or click **Chat** on a business card in the Marketplace to begin negotiation.
-                </p>
+                <p className="text-base font-bold text-slate-700">Select a business chat to start messaging</p>
+                <p className="text-xs text-slate-400">Search marketplace listings to connect with other businesses.</p>
               </div>
             )}
           </div>
-
-          {/* ── RIGHT SIDEBAR: Business Profile & Context Details ────────── */}
-          {activeConv && (
-            <div className={`w-80 border-l border-slate-200 bg-white flex flex-col h-full shrink-0 ${
-              showRightSidebarMobile ? 'fixed inset-y-0 right-0 z-50 shadow-2xl animate-slideInRight' : 'hidden lg:flex'
-            }`}>
-              <div className="p-6 border-b border-slate-100 flex justify-between items-center shrink-0">
-                <h3 className="font-black text-slate-900 text-sm">Business Profile</h3>
-                {showRightSidebarMobile && (
-                  <button onClick={() => setShowRightSidebarMobile(false)} className="p-1.5 hover:bg-slate-100 rounded-lg">
-                    <X className="h-4 w-4 text-slate-400" />
-                  </button>
-                )}
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                {/* Header profile */}
-                <div className="text-center space-y-2">
-                  <div className="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 mx-auto flex items-center justify-center font-black text-indigo-700 text-xl shadow-md">
-                    {activeConv.otherBusinessName.substring(0, 2).toUpperCase()}
-                  </div>
-                  <h4 className="font-black text-slate-900 text-base">{activeConv.otherBusinessName}</h4>
-                  <Badge className="bg-slate-100 text-slate-600 border border-slate-200/80 text-[10px] font-bold">
-                    other business
-                  </Badge>
-                </div>
-
-                {/* Snapshot inventory list */}
-                <div className="space-y-3">
-                  <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Inventory Snapshot</p>
-                  {loadingContext ? (
-                    <div className="space-y-2">
-                      <Skeleton className="h-8 w-full rounded-xl" />
-                      <Skeleton className="h-8 w-full rounded-xl" />
-                    </div>
-                  ) : otherBusinessInventory.length === 0 ? (
-                    <p className="text-xs text-slate-400">No inventory information available</p>
-                  ) : (
-                    <div className="space-y-2">
-                      {otherBusinessInventory.map((item) => (
-                        <div key={item.inventoryId} className="flex justify-between items-center p-2.5 bg-slate-50 border border-slate-200/50 rounded-xl hover:bg-slate-100/50 transition-colors">
-                          <div className="min-w-0">
-                            <p className="text-xs font-bold text-slate-800 truncate">{item.productVariant?.product?.productName}</p>
-                            <p className="text-[9px] text-slate-400 font-mono">{item.productVariant?.sku}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-xs font-black text-slate-800">{item.quantity} Qty</p>
-                            <p className="text-[9px] text-indigo-600 font-bold">₹{item.productVariant?.currentPrice}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Timeline */}
-                <div className="space-y-3">
-                  <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Request Lifecycle</p>
-                  <div className="relative pl-5 space-y-4 mt-2">
-                    {[
-                      { label: 'Request Created', checked: true },
-                      { label: 'Negotiation Active', checked: !!activeRequest },
-                      { label: 'Approved by Owner', checked: activeRequest?.status === 'APPROVED' },
-                      { label: 'Transfer Completed', checked: activeRequest?.status === 'APPROVED' && false /* demo */ },
-                    ].map((step, idx) => (
-                      <div key={idx} className="relative flex items-center">
-                        <div className={`absolute -left-5 w-2.5 h-2.5 rounded-full ring-2 ring-white z-10 ${
-                          step.checked ? 'bg-indigo-600' : 'bg-slate-200'
-                        }`} />
-                        {idx < 3 && (
-                          <div className="absolute -left-[14px] top-3 h-full w-px bg-slate-200" />
-                        )}
-                        <p className={`text-xs ${step.checked ? 'font-bold text-slate-800' : 'text-slate-400 font-medium'}`}>
-                          {step.label}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          )}
-
         </div>
       </main>
-
-      {/* Global CSS for sliding drawers */}
-      <style>{`
-        @keyframes slideInRight {
-          from { transform: translateX(100%); }
-          to   { transform: translateX(0); }
-        }
-        .animate-slideInRight {
-          animation: slideInRight 0.25s ease;
-        }
-      `}</style>
     </div>
   );
 };

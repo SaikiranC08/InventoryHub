@@ -89,14 +89,21 @@ public interface InventoryMapper {
 
     @Mapping(target = "requestId", source = "stockRequestId")
     @Mapping(target = "fromBusinessId", source = "fromBusiness.businessId")
+    @Mapping(target = "fromBusinessName", source = "fromBusiness.businessName")
     @Mapping(target = "toBusinessId", source = "toBusiness.businessId")
+    @Mapping(target = "toBusinessName", source = "toBusiness.businessName")
     @Mapping(target = "productVariantId", source = "productVariant.variantId")
+    @Mapping(target = "productName", source = "productVariant.product.productName")
+    @Mapping(target = "sku", source = "productVariant.sku")
+    @Mapping(target = "conversationId", source = "conversation.id")
     StockRequestResponse toResponse(StockRequest entity);
 
 
+
+
     //stock request entity to stock transfer dto
-    @Mapping(target = "fromBusinessId", source = "fromBusiness.businessId")
-    @Mapping(target = "toBusinessId", source = "toBusiness.businessId")
+    @Mapping(target = "fromBusinessId", source = "toBusiness.businessId")
+    @Mapping(target = "toBusinessId", source = "fromBusiness.businessId")
     @Mapping(target = "productVariantId", source = "productVariant.variantId")
     @Mapping(target = "unitPrice" , source = "offeredUnitPrice")
     @Mapping(target = "totalPrice" , source = "offeredTotalPrice")

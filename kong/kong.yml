@@ -58,6 +58,9 @@ services:
           key_claim_name: iss
           secret_is_base64: true
           run_on_preflight: false
+          uri_param_names:
+            - jwt
+
 
 
 
@@ -65,10 +68,16 @@ services:
         config:
           access:
             - |
+              local token
               local auth_header = kong.request.get_header("authorization")
               if auth_header then
-                local token = auth_header:gsub("Bearer ", "")
+                token = auth_header:gsub("Bearer ", "")
+              else
+                token = kong.request.get_query_arg("jwt")
+              end
+              if token then
                 local parts = {}
+
                 for part in token:gmatch("[^.]+") do
                   table.insert(parts, part)
                 end

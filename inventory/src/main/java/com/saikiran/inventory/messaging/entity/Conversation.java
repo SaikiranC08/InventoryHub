@@ -1,12 +1,10 @@
 package com.saikiran.inventory.messaging.entity;
 
-
 import com.saikiran.inventory.business.entity.Business;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
 
 import java.time.LocalDateTime;
 
@@ -15,18 +13,23 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "conversations")
+@Table(
+    name = "conversations",
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uq_conversation_business_pair", columnNames = {"business_one_id", "business_two_id"})
+    }
+)
 public class Conversation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY,optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "business_one_id")
     private Business businessOne;
 
-    @ManyToOne(fetch = FetchType.LAZY,optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "business_two_id")
     private Business businessTwo;
 
@@ -44,6 +47,4 @@ public class Conversation {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
-
-
 }

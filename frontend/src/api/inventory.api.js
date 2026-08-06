@@ -74,6 +74,17 @@ export const updateStockRequest = (requestId, status) => {
   });
 };
 
+export const counterStockRequest = (requestId, counterUnitPrice, counterQuantity) => {
+  const params = new URLSearchParams();
+  if (counterUnitPrice !== undefined && counterUnitPrice !== null) params.append('counterUnitPrice', counterUnitPrice);
+  if (counterQuantity !== undefined && counterQuantity !== null) params.append('counterQuantity', counterQuantity);
+
+  return apiFetch(`/api/v1/inventory/stock-requests/${requestId}/counter?${params.toString()}`, {
+    method: 'POST',
+    headers: getHeaders(),
+  });
+};
+
 export const getStockMovements = () => {
   return apiFetch('/api/v1/inventory/movements', {
     method: 'GET',
@@ -90,5 +101,6 @@ export const inventoryApi = {
   createStockRequest,
   getStockRequests,
   updateStockRequest,
+  counterStockRequest,
   getStockMovements,
 };
