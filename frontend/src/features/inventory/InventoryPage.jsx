@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { ROUTES } from '@/constants/routes';
 import logoImg from '@/assets/logo.png';
@@ -134,7 +134,34 @@ export const InventoryPage = () => {
   // --- Tab 6: Stock Requests Inbox ---
   const [stockRequests, setStockRequests] = useState([]);
   const [stockRequestsLoading, setStockRequestsLoading] = useState(false);
-  const [updatingRequestId, setUpdatingRequestId] = useState(null);
+  // Handle incoming redirect state (e.g. from SuppliersPage)
+  useEffect(() => {
+    if (location.state?.defaultTab) {
+      setActiveTab(location.state.defaultTab);
+      if (location.state.defaultTab === 'requests') {
+        fetchStockRequests();
+      }
+    }
+    if (location.state?.prefillSupplier || location.state?.prefillProductName || location.state?.prefillUnitPrice) {
+      setPurchaseForm((prev) => ({
+        ...prev,
+        supplierName: location.state.prefillSupplier !== undefined ? location.state.prefillSupplier : prev.supplierName,
+        productName: location.state.prefillProductName !== undefined ? location.state.prefillProductName : prev.productName,
+        unitPrice: location.state.prefillUnitPrice !== undefined ? location.state.prefillUnitPrice : prev.unitPrice,
+        brand: location.state.prefillBrand !== undefined ? location.state.prefillBrand : prev.brand,
+        sku: location.state.prefillSku !== undefined ? location.state.prefillSku : prev.sku,
+      }));
+    }
+    if (location.state?.prefillProduct || location.state?.prefillTargetBusinessName) {
+      const q = location.state.prefillProduct || location.state.prefillTargetBusinessName || '';
+      setMarketplaceQuery(q);
+      if (q) {
+        inventoryApi.searchMarketplace(q).then((res) => {
+          setMarketplaceResults(res || []);
+        }).catch(() => {});
+      }
+    }
+  }, [location.key, location.state]);
 
   // Core Resolution: ensure business is authenticated and selected
   useEffect(() => {
@@ -621,10 +648,13 @@ export const InventoryPage = () => {
             <ShoppingCart className="h-4 w-4" />
             Orders
           </button>
-          <a className="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all duration-200" href="#">
+          <button 
+            onClick={() => navigate(ROUTES.SUPPLIERS)}
+            className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all duration-200 text-left"
+          >
             <Truck className="h-4 w-4" />
             Suppliers
-          </a>
+          </button>
           <a className="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all duration-200" href="#">
             <BarChart3 className="h-4 w-4" />
             Reports

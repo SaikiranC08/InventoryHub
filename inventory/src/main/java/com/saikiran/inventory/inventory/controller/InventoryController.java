@@ -220,4 +220,16 @@ public class InventoryController {
         return ResponseEntity.ok(orderQueryService.getPurchaseOrdersByBusinessId(businessId));
     }
 
+    @GetMapping("/suppliers")
+    @Operation(summary = "List supplier summary", description = "Returns supplier procurement summaries grouped by supplier for active business.")
+    public ResponseEntity<List<com.saikiran.inventory.inventory.dto.SupplierResponse>> getSuppliers(
+            @RequestHeader("X-Business-Id")
+            @Parameter(description = "Active business id", required = true, example = "10")
+            Long businessId,
+            @RequestHeader("X-User-Id")
+            @Parameter(description = "Authenticated user id", required = true, example = "1")
+            Long userId) {
+        return ResponseEntity.ok(orderQueryService.getSuppliersByBusinessId(businessId));
+    }
+
 }

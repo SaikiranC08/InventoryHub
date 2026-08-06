@@ -425,9 +425,9 @@ export const DashboardPage = () => {
           <button onClick={() => navigate(ROUTES.ORDERS)} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left">
             <ShoppingCart className="h-4 w-4" /> Orders
           </button>
-          <a className="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all" href="#">
+          <button onClick={() => navigate(ROUTES.SUPPLIERS)} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left">
             <Truck className="h-4 w-4" /> Suppliers
-          </a>
+          </button>
           <a className="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all" href="#">
             <BarChart3 className="h-4 w-4" /> Reports
           </a>

@@ -106,6 +106,13 @@ export const getPurchaseOrders = () => {
   });
 };
 
+export const getSuppliers = () => {
+  return apiFetch('/api/v1/inventory/suppliers', {
+    method: 'GET',
+    headers: getHeaders(),
+  });
+};
+
 export const inventoryApi = {
   getInventory,
   purchaseStock,
@@ -119,4 +126,5 @@ export const inventoryApi = {
   getStockMovements,
   getSalesOrders,
   getPurchaseOrders,
+  getSuppliers,
 };
