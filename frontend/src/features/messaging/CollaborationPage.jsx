@@ -94,6 +94,9 @@ export const CollaborationPage = () => {
     activeConvRef.current = activeConv;
   }, [activeConv]);
 
+  // Ref to track processed navigation target to prevent infinite loops
+  const lastProcessedTargetRef = useRef(null);
+
   // ─── 2. Fetch Conversations Summary ────────────────────────────────────────
   const fetchConversations = useCallback(async (selectId = null) => {
     if (!business) return;
@@ -102,8 +105,32 @@ export const CollaborationPage = () => {
       const data = await messagingApi.getConversations();
       setConversations(data || []);
 
-      if (selectId) {
-        const match = data.find((c) => c.conversationId === selectId);
+      const targetOtherId = location.state?.otherBusinessId;
+      if (targetOtherId && lastProcessedTargetRef.current !== targetOtherId) {
+        lastProcessedTargetRef.current = targetOtherId;
+        const targetName = location.state?.otherBusinessName;
+
+        window.history.replaceState({}, document.title);
+        navigate(location.pathname, { replace: true, state: {} });
+
+        const match = (data || []).find((c) => String(c.otherBusinessId) === String(targetOtherId));
+        if (match) {
+          setActiveConv(match);
+        } else {
+          const tempConv = {
+            conversationId: null,
+            otherBusinessId: targetOtherId,
+            otherBusinessName: targetName || 'Business',
+            lastMessage: 'Starting conversation...',
+            lastMessageTime: new Date().toISOString(),
+            unreadCount: 0,
+            isTemporary: true,
+          };
+          setConversations([tempConv, ...(data || [])]);
+          setActiveConv(tempConv);
+        }
+      } else if (selectId) {
+        const match = (data || []).find((c) => c.conversationId === selectId);
         if (match) setActiveConv(match);
       }
     } catch (err) {
@@ -111,42 +138,13 @@ export const CollaborationPage = () => {
     } finally {
       setLoadingConv(false);
     }
-  }, [business]);
+  }, [business, location.state, location.pathname, navigate]);
 
   useEffect(() => {
     if (business) {
       fetchConversations();
     }
   }, [business]);
-
-  // ─── 3. Handle Navigation State Entry (Marketplace Search -> Chat) ──────────
-  useEffect(() => {
-    if (business && location.state && location.state.otherBusinessId) {
-      const { otherBusinessId, otherBusinessName } = location.state;
-
-      // Clear location state to prevent duplicate creation on refreshes
-      window.history.replaceState({}, document.title);
-
-      // Check if conversation already exists
-      const match = conversations.find((c) => c.otherBusinessId === otherBusinessId);
-      if (match) {
-        setActiveConv(match);
-      } else {
-        // Create temporary conversation shell until first message is sent
-        const tempConv = {
-          conversationId: null,
-          otherBusinessId,
-          otherBusinessName,
-          lastMessage: 'Starting conversation...',
-          lastMessageTime: new Date().toISOString(),
-          unreadCount: 0,
-          isTemporary: true,
-        };
-        setConversations((prev) => [tempConv, ...prev]);
-        setActiveConv(tempConv);
-      }
-    }
-  }, [business, location.state, conversations]);
 
   // ─── 4. Fetch Message History (Page 0) ──────────────────────────────────
   const fetchMessages = useCallback(async (conv) => {
