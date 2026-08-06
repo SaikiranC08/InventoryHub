@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { ROUTES } from '@/constants/routes';
+import logoImg from '@/assets/logo.png';
 import { getBusinessId } from '@/utils/tokenStorage';
 import { businessApi } from '@/api/business.api';
 import { dashboardApi } from '@/api/dashboard.api';
@@ -408,9 +409,7 @@ export const DashboardPage = () => {
       {/* ── Sidebar ─────────────────────────────────────────────────────── */}
       <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 flex-col p-4 gap-2 bg-white border-r border-slate-200/80 shadow-sm z-40">
         <div className="px-3 py-2 flex items-center gap-2 mb-6">
-          <div className="bg-blue-600 p-2 rounded-xl text-white shadow-md">
-            <Building2 className="h-5 w-5" />
-          </div>
+          <img src={logoImg} alt="InventoryHub Logo" className="h-9 w-9 object-contain rounded-xl shadow-sm" />
           <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
             InventoryHub
           </span>
@@ -423,9 +422,9 @@ export const DashboardPage = () => {
           <button onClick={() => navigate(ROUTES.INVENTORY)} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left">
             <Boxes className="h-4 w-4" /> Inventory
           </button>
-          <a className="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all" href="#">
+          <button onClick={() => navigate(ROUTES.ORDERS)} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left">
             <ShoppingCart className="h-4 w-4" /> Orders
-          </a>
+          </button>
           <a className="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all" href="#">
             <Truck className="h-4 w-4" /> Suppliers
           </a>
@@ -472,9 +471,7 @@ export const DashboardPage = () => {
           <aside className="relative flex flex-col w-72 max-w-[85%] h-full p-4 gap-2 bg-white shadow-2xl z-10 animate-slideRight">
             <div className="px-3 py-2 flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <div className="bg-blue-600 p-2 rounded-xl text-white shadow-md">
-                  <Building2 className="h-5 w-5" />
-                </div>
+                <img src={logoImg} alt="InventoryHub Logo" className="h-9 w-9 object-contain rounded-xl shadow-sm" />
                 <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                   InventoryHub
                 </span>

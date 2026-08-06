@@ -27,6 +27,7 @@ public class InventoryController {
     private final BusinessService businessService;
     private final InventorySearchService searchService;
     private final StockMovementService stockMovementService;
+    private final OrderQueryService orderQueryService;
 
 
     @GetMapping
@@ -193,6 +194,30 @@ public class InventoryController {
             @Parameter(description = "Authenticated user id", required = true, example = "1")
             Long userId) {
         return ResponseEntity.ok(stockMovementService.getMovementsByBusinessId(businessId));
+    }
+
+    @GetMapping("/sales-orders")
+    @Operation(summary = "List sales orders", description = "Returns all sales orders for the active business.")
+    public ResponseEntity<List<SalesOrderResponse>> getSalesOrders(
+            @RequestHeader("X-Business-Id")
+            @Parameter(description = "Active business id", required = true, example = "10")
+            Long businessId,
+            @RequestHeader("X-User-Id")
+            @Parameter(description = "Authenticated user id", required = true, example = "1")
+            Long userId) {
+        return ResponseEntity.ok(orderQueryService.getSalesOrdersByBusinessId(businessId));
+    }
+
+    @GetMapping("/purchase-orders")
+    @Operation(summary = "List purchase orders", description = "Returns all purchase orders for the active business.")
+    public ResponseEntity<List<PurchaseOrderResponse>> getPurchaseOrders(
+            @RequestHeader("X-Business-Id")
+            @Parameter(description = "Active business id", required = true, example = "10")
+            Long businessId,
+            @RequestHeader("X-User-Id")
+            @Parameter(description = "Authenticated user id", required = true, example = "1")
+            Long userId) {
+        return ResponseEntity.ok(orderQueryService.getPurchaseOrdersByBusinessId(businessId));
     }
 
 }

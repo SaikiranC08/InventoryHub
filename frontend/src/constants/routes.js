@@ -7,6 +7,7 @@ export const ROUTES = {
   BUSINESS_CREATE: '/business/create',
   DASHBOARD: '/dashboard',
   INVENTORY: '/inventory',
+  ORDERS: '/orders',
   STOCK_HISTORY: '/stock-history',
   STOCK_REQUESTS: '/stock-requests',
   MESSAGING: '/messaging',

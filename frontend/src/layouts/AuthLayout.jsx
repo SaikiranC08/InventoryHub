@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { Box, CheckCircle2, ShieldCheck, Zap } from 'lucide-react';
 import { ROUTES } from '@/constants/routes';
 
+import logoImg from '@/assets/logo.png';
+
 export const AuthLayout = ({ children }) => {
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-12 bg-stitch-surface font-sans text-stitch-text">
@@ -10,9 +12,7 @@ export const AuthLayout = ({ children }) => {
       <div className="lg:col-span-7 flex flex-col justify-between p-6 sm:p-12 xl:p-16">
         <div className="flex items-center justify-between">
           <Link to={ROUTES.HOME} className="flex items-center space-x-3 group">
-            <div className="h-9 w-9 rounded-xl bg-stitch-primary flex items-center justify-center text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
-              <Box className="h-5 w-5" />
-            </div>
+            <img src={logoImg} alt="InventoryHub Logo" className="h-9 w-9 object-contain rounded-xl shadow-sm group-hover:scale-105 transition-transform" />
             <span className="font-bold text-xl tracking-tight text-slate-900">
               Inventory<span className="text-stitch-primary">Hub</span>
             </span>

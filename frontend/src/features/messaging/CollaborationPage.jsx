@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { ROUTES } from '@/constants/routes';
+import logoImg from '@/assets/logo.png';
 import { getAccessToken, getBusinessId } from '@/utils/tokenStorage';
 
 import { businessApi } from '@/api/business.api';
@@ -464,9 +465,7 @@ export const CollaborationPage = () => {
       {/* ── Desktop Left Navigation Sidebar ─────────────────────────── */}
       <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 flex-col p-4 gap-2 bg-white border-r border-slate-200/80 shadow-sm z-40">
         <div className="px-3 py-2 flex items-center gap-2 mb-6">
-          <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-sm shadow-md shadow-blue-500/20">
-            IH
-          </div>
+          <img src={logoImg} alt="InventoryHub Logo" className="h-9 w-9 object-contain rounded-xl shadow-sm" />
           <div>
             <h1 className="font-black text-sm text-slate-900 tracking-tight leading-none">InventoryHub</h1>
             <p className="text-[10px] text-slate-400 font-medium mt-0.5">Enterprise Portal</p>
@@ -542,9 +541,7 @@ export const CollaborationPage = () => {
           <aside className="relative flex flex-col w-72 max-w-[85%] h-full p-4 gap-2 bg-white shadow-2xl z-10 animate-slideRight">
             <div className="px-3 py-2 flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <div className="bg-blue-600 p-2 rounded-xl text-white shadow-md">
-                  <Building2 className="h-5 w-5" />
-                </div>
+                <img src={logoImg} alt="InventoryHub Logo" className="h-9 w-9 object-contain rounded-xl shadow-sm" />
                 <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                   InventoryHub
                 </span>

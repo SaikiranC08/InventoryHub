@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { ROUTES } from '@/constants/routes';
+import logoImg from '@/assets/logo.png';
 import { getBusinessId } from '@/utils/tokenStorage';
 import { businessApi } from '@/api/business.api';
 import { inventoryApi } from '@/api/inventory.api';
@@ -589,9 +590,7 @@ export const InventoryPage = () => {
       {/* SideNavBar */}
       <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 flex-col p-4 gap-2 bg-white border-r border-slate-200/80 shadow-sm z-40 transition-transform">
         <div className="px-3 py-2 flex items-center gap-2 mb-6">
-          <div className="bg-blue-600 p-2 rounded-xl text-white shadow-md">
-            <Building2 className="h-5 w-5" />
-          </div>
+          <img src={logoImg} alt="InventoryHub Logo" className="h-9 w-9 object-contain rounded-xl shadow-sm" />
           <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
             InventoryHub
           </span>
@@ -615,10 +614,13 @@ export const InventoryPage = () => {
             <Boxes className="h-4 w-4" />
             Inventory
           </button>
-          <a className="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all duration-200" href="#">
+          <button 
+            onClick={() => navigate(ROUTES.ORDERS)}
+            className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all duration-200 text-left"
+          >
             <ShoppingCart className="h-4 w-4" />
             Orders
-          </a>
+          </button>
           <a className="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all duration-200" href="#">
             <Truck className="h-4 w-4" />
             Suppliers
@@ -689,9 +691,7 @@ export const InventoryPage = () => {
           <aside className="relative flex flex-col w-72 max-w-[85%] h-full p-4 gap-2 bg-white shadow-2xl z-10 animate-slideRight">
             <div className="px-3 py-2 flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <div className="bg-blue-600 p-2 rounded-xl text-white shadow-md">
-                  <Building2 className="h-5 w-5" />
-                </div>
+                <img src={logoImg} alt="InventoryHub Logo" className="h-9 w-9 object-contain rounded-xl shadow-sm" />
                 <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                   InventoryHub
                 </span>
@@ -1104,7 +1104,7 @@ export const InventoryPage = () => {
                                     {reorder}
                                   </td>
                                   <td className="px-6 py-4 text-right font-mono font-bold text-slate-700">
-                                    ${(item.productVariant?.currentPrice || 0).toFixed(2)}
+                                    ₹{(item.productVariant?.currentPrice || 0).toFixed(2)}
                                   </td>
                                   <td className="px-6 py-4 text-center whitespace-nowrap">
                                     <span className={`px-2 py-1 rounded-full text-xs font-bold border ${statusDetails.color}`}>
@@ -1319,7 +1319,7 @@ export const InventoryPage = () => {
                             value={purchaseForm.unitPrice}
                             onChange={(e) => setPurchaseForm(prev => ({ ...prev, unitPrice: e.target.value }))}
                             className="w-full px-3.5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition-shadow"
-                            placeholder="$0.00"
+                            placeholder="₹0.00"
                           />
                         </div>
                         <div className="flex flex-col gap-1">
@@ -1332,7 +1332,7 @@ export const InventoryPage = () => {
                             value={purchaseForm.currentPrice}
                             onChange={(e) => setPurchaseForm(prev => ({ ...prev, currentPrice: e.target.value }))}
                             className="w-full px-3.5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition-shadow"
-                            placeholder="$0.00"
+                            placeholder="₹0.00"
                           />
                         </div>
                         <div className="flex flex-col gap-1">
@@ -1399,12 +1399,12 @@ export const InventoryPage = () => {
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-slate-450">Supplier Unit Price</span>
-                        <span className="font-mono font-bold text-slate-800">${parseFloat(purchaseForm.unitPrice || 0).toFixed(2)}</span>
+                        <span className="font-mono font-bold text-slate-800">₹{parseFloat(purchaseForm.unitPrice || 0).toFixed(2)}</span>
                       </div>
                       <div className="border-t border-slate-100 pt-4 flex justify-between items-center text-base">
                         <span className="font-bold text-slate-900">Total Purchase Cost</span>
                         <span className="font-mono font-black text-blue-600">
-                          ${(parseFloat(purchaseForm.unitPrice || 0) * parseInt(purchaseForm.quantity || 0)).toFixed(2)}
+                          ₹{(parseFloat(purchaseForm.unitPrice || 0) * parseInt(purchaseForm.quantity || 0)).toFixed(2)}
                         </span>
                       </div>
                     </div>
@@ -1478,7 +1478,7 @@ export const InventoryPage = () => {
                             />
                           </div>
                           <div className="flex flex-col gap-1">
-                            <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Unit Sale Price ($) *</label>
+                            <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Unit Sale Price (₹) *</label>
                             <input 
                               required
                               type="number"
@@ -1487,7 +1487,7 @@ export const InventoryPage = () => {
                               value={sellForm.unitPrice}
                               onChange={(e) => setSellForm(prev => ({ ...prev, unitPrice: e.target.value }))}
                               className="w-full px-3.5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition-shadow"
-                              placeholder="$0.00"
+                              placeholder="₹0.00"
                             />
                           </div>
                         </div>
@@ -1563,7 +1563,7 @@ export const InventoryPage = () => {
                         <div className="border-t border-slate-100 pt-4 flex justify-between items-center text-base">
                           <span className="font-bold text-slate-900">Total Transaction Value</span>
                           <span className="font-mono font-black text-indigo-650">
-                            ${(parseFloat(sellForm.unitPrice || 0) * parseInt(sellForm.quantity || 0)).toFixed(2)}
+                            ₹{(parseFloat(sellForm.unitPrice || 0) * parseInt(sellForm.quantity || 0)).toFixed(2)}
                           </span>
                         </div>
                       </div>
@@ -1651,7 +1651,7 @@ export const InventoryPage = () => {
                           />
                         </div>
                         <div className="flex flex-col gap-1">
-                          <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Transfer Unit Price ($) *</label>
+                          <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Transfer Unit Price (₹) *</label>
                           <input 
                             required
                             type="number"
@@ -1660,7 +1660,7 @@ export const InventoryPage = () => {
                             value={transferForm.unitPrice}
                             onChange={(e) => setTransferForm(prev => ({ ...prev, unitPrice: e.target.value }))}
                             className="w-full px-3.5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition-shadow"
-                            placeholder="$0.00"
+                            placeholder="₹0.00"
                           />
                         </div>
                       </div>
@@ -1735,7 +1735,7 @@ export const InventoryPage = () => {
                         <div className="border-t border-slate-100 pt-4 flex justify-between items-center text-base">
                           <span className="font-bold text-slate-900">Est. Transfer Value</span>
                           <span className="font-mono font-black text-blue-600">
-                            ${(parseFloat(transferForm.unitPrice || 0) * parseInt(transferForm.quantity || 0)).toFixed(2)}
+                            ₹{(parseFloat(transferForm.unitPrice || 0) * parseInt(transferForm.quantity || 0)).toFixed(2)}
                           </span>
                         </div>
                       </div>
@@ -1809,7 +1809,7 @@ export const InventoryPage = () => {
                                 SKU: {result.sku}
                               </span>
                               <Badge className="bg-blue-50 border border-blue-100 text-blue-700 font-bold hover:bg-blue-50">
-                                ${result.currentPrice.toFixed(2)}
+                                ₹{result.currentPrice.toFixed(2)}
                               </Badge>
                             </div>
                             <div>
@@ -1928,7 +1928,7 @@ export const InventoryPage = () => {
                                   <span>To Business: <strong className="text-slate-700">{req.toBusinessName || `ID: ${req.toBusinessId}`}</strong></span>
 
                                   <span>Qty: <strong className="text-slate-700">{req.quantity}</strong></span>
-                                  <span>Offered: <strong className="text-slate-700">${(req.offeredUnitPrice || 0).toFixed ? (req.offeredUnitPrice).toFixed(2) : req.offeredUnitPrice}/unit</strong></span>
+                                  <span>Offered: <strong className="text-slate-700">₹{(req.offeredUnitPrice || 0).toFixed ? (req.offeredUnitPrice).toFixed(2) : req.offeredUnitPrice}/unit</strong></span>
                                 </div>
                               </div>
                             </div>
@@ -2058,7 +2058,7 @@ export const InventoryPage = () => {
                 <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 flex justify-between items-center">
                   <span className="text-xs text-blue-700 font-semibold">Total Offer</span>
                   <span className="font-mono font-black text-blue-700">
-                    ${(parseFloat(requestForm.offeredUnitPrice || 0) * parseInt(requestForm.quantity || 0)).toFixed(2)}
+                    ₹{(parseFloat(requestForm.offeredUnitPrice || 0) * parseInt(requestForm.quantity || 0)).toFixed(2)}
                   </span>
                 </div>
               )}
@@ -2176,12 +2176,12 @@ export const InventoryPage = () => {
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-slate-100 text-sm">
                     <span className="text-slate-500">Unit Retail Price</span>
-                    <span className="font-mono font-bold text-slate-800">${(selectedItemDetail.productVariant?.currentPrice || 0).toFixed(2)}</span>
+                    <span className="font-mono font-bold text-slate-800">₹{(selectedItemDetail.productVariant?.currentPrice || 0).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between items-center py-2 text-sm">
                     <span className="text-slate-500 font-semibold">Total Stock Valuation</span>
                     <span className="font-mono font-black text-blue-600">
-                      ${(selectedItemDetail.quantity * (selectedItemDetail.productVariant?.currentPrice || 0)).toFixed(2)}
+                      ₹{(selectedItemDetail.quantity * (selectedItemDetail.productVariant?.currentPrice || 0)).toFixed(2)}
                     </span>
                   </div>
                 </div>

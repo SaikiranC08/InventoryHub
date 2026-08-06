@@ -92,6 +92,20 @@ export const getStockMovements = () => {
   });
 };
 
+export const getSalesOrders = () => {
+  return apiFetch('/api/v1/inventory/sales-orders', {
+    method: 'GET',
+    headers: getHeaders(),
+  });
+};
+
+export const getPurchaseOrders = () => {
+  return apiFetch('/api/v1/inventory/purchase-orders', {
+    method: 'GET',
+    headers: getHeaders(),
+  });
+};
+
 export const inventoryApi = {
   getInventory,
   purchaseStock,
@@ -103,4 +117,6 @@ export const inventoryApi = {
   updateStockRequest,
   counterStockRequest,
   getStockMovements,
+  getSalesOrders,
+  getPurchaseOrders,
 };
