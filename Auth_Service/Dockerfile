@@ -16,4 +16,4 @@ COPY --from=build /app/build/libs/*.jar app.jar
 
 EXPOSE 9898
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Xms64m", "-Xmx256m","-XX:+UseSerialGC","-jar", "app.jar"]
