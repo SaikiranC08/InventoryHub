@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { ROUTES } from '@/constants/routes';
-import { businessService } from '@/services/business.service';
+import logoImg from '@/assets/logo.png';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -121,9 +121,9 @@ export const BusinessCreatePage = () => {
         <div className="hidden md:block md:col-span-5 bg-gradient-to-br from-slate-900 to-indigo-950 p-8 flex flex-col justify-between relative text-white">
           <div className="absolute inset-0 bg-blue-600/10 pointer-events-none" />
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Building2 className="h-6 w-6 text-blue-400" />
-              <span className="font-extrabold text-lg tracking-tight">InventoryHub</span>
+            <div className="flex items-center gap-3">
+              <img src={logoImg} alt="InventoryHub Logo" className="h-11 w-11 object-contain rounded-xl shadow-sm" />
+              <span className="font-extrabold text-xl tracking-tight">InventoryHub</span>
             </div>
             <div className="space-y-2 pt-6">
               <h2 className="text-2xl font-bold tracking-tight text-slate-100">Setup your operations</h2>

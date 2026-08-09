@@ -12,7 +12,7 @@ export const AuthLayout = ({ children }) => {
       <div className="lg:col-span-7 flex flex-col justify-between p-6 sm:p-12 xl:p-16">
         <div className="flex items-center justify-between">
           <Link to={ROUTES.HOME} className="flex items-center space-x-3 group">
-            <img src={logoImg} alt="InventoryHub Logo" className="h-9 w-9 object-contain rounded-xl shadow-sm group-hover:scale-105 transition-transform" />
+            <img src={logoImg} alt="InventoryHub Logo" className="h-11 w-11 object-contain rounded-xl shadow-sm group-hover:scale-105 transition-transform" />
             <span className="font-bold text-xl tracking-tight text-slate-900">
               Inventory<span className="text-stitch-primary">Hub</span>
             </span>

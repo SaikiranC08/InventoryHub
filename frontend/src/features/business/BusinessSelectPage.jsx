@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { ROUTES } from '@/constants/routes';
-import { businessService } from '@/services/business.service';
+import logoImg from '@/assets/logo.png';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -62,10 +62,8 @@ export const BusinessSelectPage = () => {
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       {/* Top Navbar */}
       <header className="sticky top-0 w-full z-50 h-[72px] flex justify-between items-center px-6 bg-white/80 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
-        <div className="flex items-center gap-2">
-          <div className="bg-blue-600 p-2 rounded-xl text-white shadow-md">
-            <Building2 className="h-5 w-5" />
-          </div>
+        <div className="flex items-center gap-3">
+          <img src={logoImg} alt="InventoryHub Logo" className="h-11 w-11 object-contain rounded-xl shadow-sm" />
           <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
             InventoryHub
           </span>
@@ -103,13 +101,6 @@ export const BusinessSelectPage = () => {
               Select the workspace/business you want to manage today.
             </p>
           </div>
-          <Button 
-            onClick={() => navigate(ROUTES.BUSINESS_CREATE)} 
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm h-11 px-5 rounded-xl transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Create New Business
-          </Button>
         </div>
 
         {/* Business Grid */}

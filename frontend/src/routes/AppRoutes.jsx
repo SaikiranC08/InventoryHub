@@ -35,13 +35,15 @@ const OrdersPage = lazy(() =>
 const SuppliersPage = lazy(() =>
   import('@/features/suppliers/SuppliersPage').then((m) => ({ default: m.SuppliersPage }))
 );
+const ReportsPage = lazy(() =>
+  import('@/features/reports/ReportsPage').then((m) => ({ default: m.ReportsPage }))
+);
 const StockHistoryPage = lazy(() =>
   import('@/features/stock-history/StockHistoryPage').then((m) => ({ default: m.StockHistoryPage }))
 );
 const CollaborationPage = lazy(() =>
   import('@/features/messaging/CollaborationPage').then((m) => ({ default: m.CollaborationPage }))
 );
-
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-stitch-surface p-4">
@@ -82,6 +84,7 @@ export const AppRoutes = () => {
           <Route path={ROUTES.INVENTORY} element={<InventoryPage />} />
           <Route path={ROUTES.ORDERS} element={<OrdersPage />} />
           <Route path={ROUTES.SUPPLIERS} element={<SuppliersPage />} />
+          <Route path={ROUTES.REPORTS} element={<ReportsPage />} />
           <Route path={ROUTES.STOCK_HISTORY} element={<StockHistoryPage />} />
           <Route path={ROUTES.MESSAGING} element={<CollaborationPage />} />
           <Route path={ROUTES.BUSINESS_SELECT} element={<BusinessSelectPage />} />

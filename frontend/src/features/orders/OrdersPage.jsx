@@ -160,7 +160,7 @@ export const OrdersPage = () => {
       {/* ── Sidebar ─────────────────────────────────────────────────────── */}
       <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 flex-col p-4 gap-2 bg-white border-r border-slate-200/80 shadow-sm z-40">
         <div className="px-3 py-2 flex items-center gap-2 mb-6">
-          <img src={logoImg} alt="InventoryHub Logo" className="h-9 w-9 object-contain rounded-xl shadow-sm" />
+          <img src={logoImg} alt="InventoryHub Logo" className="h-11 w-11 object-contain rounded-xl shadow-sm" />
           <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
             InventoryHub
           </span>
@@ -184,12 +184,18 @@ export const OrdersPage = () => {
           >
             <ShoppingCart className="h-4 w-4" /> Orders
           </button>
-          <a className="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all" href="#">
+          <button
+            onClick={() => navigate(ROUTES.SUPPLIERS)}
+            className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left"
+          >
             <Truck className="h-4 w-4" /> Suppliers
-          </a>
-          <a className="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all" href="#">
+          </button>
+          <button
+            onClick={() => navigate(ROUTES.REPORTS)}
+            className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left"
+          >
             <BarChart3 className="h-4 w-4" /> Reports
-          </a>
+          </button>
           <button
             onClick={() => navigate(ROUTES.STOCK_HISTORY)}
             className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left"
@@ -235,7 +241,7 @@ export const OrdersPage = () => {
           <aside className="relative flex flex-col w-72 max-w-[85%] h-full p-4 gap-2 bg-white shadow-2xl z-10 animate-slideRight">
             <div className="px-3 py-2 flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <img src={logoImg} alt="InventoryHub Logo" className="h-9 w-9 object-contain rounded-xl shadow-sm" />
+                <img src={logoImg} alt="InventoryHub Logo" className="h-11 w-11 object-contain rounded-xl shadow-sm" />
                 <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                   InventoryHub
                 </span>
@@ -255,6 +261,12 @@ export const OrdersPage = () => {
               <a className="flex items-center gap-3 px-3 py-2.5 bg-blue-50 text-blue-700 rounded-xl font-semibold text-sm" href="#">
                 <ShoppingCart className="h-4 w-4" /> Orders
               </a>
+              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.SUPPLIERS); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-sm font-medium">
+                <Truck className="h-4 w-4" /> Suppliers
+              </button>
+              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.REPORTS); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-sm font-medium">
+                <BarChart3 className="h-4 w-4" /> Reports
+              </button>
               <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.STOCK_HISTORY); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-sm font-medium">
                 <History className="h-4 w-4" /> Stock History
               </button>

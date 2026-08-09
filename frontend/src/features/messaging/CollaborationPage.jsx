@@ -17,6 +17,9 @@ import {
   Building2,
   LayoutDashboard,
   Boxes,
+  ShoppingCart,
+  Truck,
+  BarChart3,
   LogOut,
   Search,
   Send,
@@ -465,7 +468,7 @@ export const CollaborationPage = () => {
       {/* ── Desktop Left Navigation Sidebar ─────────────────────────── */}
       <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 flex-col p-4 gap-2 bg-white border-r border-slate-200/80 shadow-sm z-40">
         <div className="px-3 py-2 flex items-center gap-2 mb-6">
-          <img src={logoImg} alt="InventoryHub Logo" className="h-9 w-9 object-contain rounded-xl shadow-sm" />
+          <img src={logoImg} alt="InventoryHub Logo" className="h-11 w-11 object-contain rounded-xl shadow-sm" />
           <div>
             <h1 className="font-black text-sm text-slate-900 tracking-tight leading-none">InventoryHub</h1>
             <p className="text-[10px] text-slate-400 font-medium mt-0.5">Enterprise Portal</p>
@@ -511,7 +514,43 @@ export const CollaborationPage = () => {
           </Button>
 
           <Button
-            onClick={() => navigate('/collaboration')}
+            onClick={() => navigate(ROUTES.ORDERS)}
+            variant="ghost"
+            className="w-full justify-start text-xs font-semibold text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl py-2.5"
+          >
+            <ShoppingCart className="mr-2.5 h-4 w-4" />
+            Orders
+          </Button>
+
+          <Button
+            onClick={() => navigate(ROUTES.SUPPLIERS)}
+            variant="ghost"
+            className="w-full justify-start text-xs font-semibold text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl py-2.5"
+          >
+            <Truck className="mr-2.5 h-4 w-4" />
+            Suppliers
+          </Button>
+
+          <Button
+            onClick={() => navigate(ROUTES.REPORTS)}
+            variant="ghost"
+            className="w-full justify-start text-xs font-semibold text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl py-2.5"
+          >
+            <BarChart3 className="mr-2.5 h-4 w-4" />
+            Reports
+          </Button>
+
+          <Button
+            onClick={() => navigate(ROUTES.STOCK_HISTORY)}
+            variant="ghost"
+            className="w-full justify-start text-xs font-semibold text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl py-2.5"
+          >
+            <History className="mr-2.5 h-4 w-4" />
+            Stock History
+          </Button>
+
+          <Button
+            onClick={() => navigate(ROUTES.MESSAGING)}
             className="w-full justify-start text-xs font-bold bg-blue-600 text-white rounded-xl py-2.5 shadow-md shadow-blue-500/10"
           >
             <MessageSquare className="mr-2.5 h-4 w-4" />
@@ -541,7 +580,7 @@ export const CollaborationPage = () => {
           <aside className="relative flex flex-col w-72 max-w-[85%] h-full p-4 gap-2 bg-white shadow-2xl z-10 animate-slideRight">
             <div className="px-3 py-2 flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <img src={logoImg} alt="InventoryHub Logo" className="h-9 w-9 object-contain rounded-xl shadow-sm" />
+                <img src={logoImg} alt="InventoryHub Logo" className="h-11 w-11 object-contain rounded-xl shadow-sm" />
                 <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                   InventoryHub
                 </span>
@@ -560,6 +599,15 @@ export const CollaborationPage = () => {
               </button>
               <button onClick={() => { setShowLeftSidebarMobile(false); navigate(ROUTES.INVENTORY); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-sm font-medium">
                 <Boxes className="h-4 w-4" /> Inventory
+              </button>
+              <button onClick={() => { setShowLeftSidebarMobile(false); navigate(ROUTES.ORDERS); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-sm font-medium">
+                <ShoppingCart className="h-4 w-4" /> Orders
+              </button>
+              <button onClick={() => { setShowLeftSidebarMobile(false); navigate(ROUTES.SUPPLIERS); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-sm font-medium">
+                <Truck className="h-4 w-4" /> Suppliers
+              </button>
+              <button onClick={() => { setShowLeftSidebarMobile(false); navigate(ROUTES.REPORTS); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-sm font-medium">
+                <BarChart3 className="h-4 w-4" /> Reports
               </button>
               <button onClick={() => { setShowLeftSidebarMobile(false); navigate(ROUTES.STOCK_HISTORY); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-sm font-medium">
                 <History className="h-4 w-4" /> Stock History

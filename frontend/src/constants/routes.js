@@ -9,6 +9,7 @@ export const ROUTES = {
   INVENTORY: '/inventory',
   ORDERS: '/orders',
   SUPPLIERS: '/suppliers',
+  REPORTS: '/reports',
   STOCK_HISTORY: '/stock-history',
   STOCK_REQUESTS: '/stock-requests',
   MESSAGING: '/messaging',

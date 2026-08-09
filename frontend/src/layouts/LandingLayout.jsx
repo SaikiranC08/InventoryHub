@@ -16,7 +16,7 @@ export const LandingLayout = ({ children }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Logo */}
           <Link to={ROUTES.HOME} className="flex items-center space-x-3 group">
-            <img src={logoImg} alt="InventoryHub Logo" className="h-9 w-9 object-contain rounded-xl shadow-sm group-hover:scale-105 transition-transform" />
+            <img src={logoImg} alt="InventoryHub Logo" className="h-11 w-11 object-contain rounded-xl shadow-sm group-hover:scale-105 transition-transform" />
             <div className="flex flex-col">
               <span className="font-bold text-lg tracking-tight text-slate-900 leading-tight">
                 Inventory<span className="text-stitch-primary">Hub</span>
@@ -72,7 +72,7 @@ export const LandingLayout = ({ children }) => {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
             <div className="col-span-2 space-y-4">
               <div className="flex items-center space-x-3">
-                <img src={logoImg} alt="InventoryHub Logo" className="h-8 w-8 object-contain rounded-lg shadow-sm" />
+                <img src={logoImg} alt="InventoryHub Logo" className="h-10 w-10 object-contain rounded-lg shadow-sm" />
                 <span className="font-bold text-lg text-slate-900">InventoryHub</span>
               </div>
               <p className="text-sm text-slate-500 max-w-sm leading-relaxed">
