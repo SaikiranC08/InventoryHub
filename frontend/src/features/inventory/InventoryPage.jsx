@@ -134,6 +134,7 @@ export const InventoryPage = () => {
   // --- Tab 6: Stock Requests Inbox ---
   const [stockRequests, setStockRequests] = useState([]);
   const [stockRequestsLoading, setStockRequestsLoading] = useState(false);
+  const [updatingRequestId, setUpdatingRequestId] = useState(null);
   // Handle incoming redirect state (e.g. from SuppliersPage)
   useEffect(() => {
     if (location.state?.defaultTab) {
@@ -615,98 +616,100 @@ export const InventoryPage = () => {
   return (
     <div className="font-sans text-slate-800 antialiased flex h-screen overflow-hidden bg-slate-50/50">
       {/* SideNavBar */}
-      <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 flex-col p-4 gap-2 bg-white border-r border-slate-200/80 shadow-sm z-40 transition-transform">
-        <div className="px-3 py-2 flex items-center gap-2 mb-6">
-          <img src={logoImg} alt="InventoryHub Logo" className="h-11 w-11 object-contain rounded-xl shadow-sm" />
-          <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            InventoryHub
-          </span>
+      <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 flex-col p-4 gap-2 bg-white border-r border-slate-200/80 shadow-sm z-40">
+        <div className="px-3 py-2 flex items-center gap-3 mb-4">
+          <img src={logoImg} alt="InventoryHub Logo" className="h-10 w-10 object-contain rounded-xl shadow-sm" />
+          <div className="flex flex-col">
+            <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              InventoryHub
+            </span>
+            <span className="text-[9px] uppercase font-mono tracking-widest text-slate-400 font-semibold">
+              Stock Operations
+            </span>
+          </div>
         </div>
 
         {/* Navigation Links */}
         <nav className="flex-1 flex flex-col gap-1 overflow-y-auto">
-          <button 
+          <button
             onClick={() => navigate(ROUTES.DASHBOARD)}
-            className="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all duration-200 text-left w-full"
+            className="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all duration-200 text-left w-full text-xs font-medium"
           >
-            <LayoutDashboard className="h-4 w-4" />
+            <LayoutDashboard className="h-4 w-4 text-slate-400" />
             Dashboard
           </button>
-          <button 
+          <button
             onClick={() => handleTabChange('products')}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition-all duration-200 text-left w-full ${
-              activeTab === 'products' ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold transition-all duration-200 text-left w-full text-xs ${
+              activeTab === 'products'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-600/20'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
             <Boxes className="h-4 w-4" />
             Inventory
           </button>
-          <button 
+          <button
             onClick={() => navigate(ROUTES.ORDERS)}
-            className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all duration-200 text-left"
+            className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all duration-200 text-left text-xs font-medium"
           >
-            <ShoppingCart className="h-4 w-4" />
-            Orders
+            <ShoppingCart className="h-4 w-4 text-slate-400" />
+            Orders & Requests
           </button>
-          <button 
+          <button
             onClick={() => navigate(ROUTES.SUPPLIERS)}
-            className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all duration-200 text-left"
+            className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all duration-200 text-left text-xs font-medium"
           >
-            <Truck className="h-4 w-4" />
+            <Truck className="h-4 w-4 text-slate-400" />
             Suppliers
           </button>
-          <button 
+          <button
             onClick={() => navigate(ROUTES.REPORTS)}
-            className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all duration-200 text-left"
+            className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all duration-200 text-left text-xs font-medium"
           >
-            <BarChart3 className="h-4 w-4" />
+            <BarChart3 className="h-4 w-4 text-slate-400" />
             Reports
           </button>
-          <button 
+          <button
             onClick={() => navigate(ROUTES.STOCK_HISTORY)}
-            className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all duration-200 text-left"
+            className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all duration-200 text-left text-xs font-medium"
           >
-            <History className="h-4 w-4" />
+            <History className="h-4 w-4 text-slate-400" />
             Stock History
           </button>
-          <button 
+          <button
             onClick={() => navigate(ROUTES.MESSAGING)}
-            className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all duration-200 text-left"
+            className="flex items-center gap-3 w-full px-3 py-2.5 text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 text-left text-xs font-semibold"
           >
-            <MessageSquare className="h-4 w-4" />
-            Collaboration
+            <MessageSquare className="h-4 w-4 text-blue-500" />
+            Business Chat
           </button>
         </nav>
 
-
-
-        {/* Bottom Panel */}
-        <div className="mt-auto border-t border-slate-100 pt-4 flex flex-col gap-1">
-          <button 
+        {/* Bottom Workspace Switcher Panel */}
+        <div className="mt-auto border-t border-slate-100 pt-3 flex flex-col gap-1">
+          <button
             onClick={() => navigate(ROUTES.BUSINESS_SELECT)}
-            className="flex items-center justify-between w-full px-3 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl border border-slate-200/60 shadow-sm transition-all duration-200 active:scale-[0.98]"
+            className="flex items-center justify-between w-full px-3 py-2.5 bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-900 rounded-xl border border-slate-200/80 shadow-sm transition-all duration-200 active:scale-[0.98] group"
           >
             <div className="flex items-center gap-2.5 text-left min-w-0">
-              <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
                 <Building2 className="h-4 w-4 text-blue-600" />
               </div>
               <div className="min-w-0">
-                <p className="font-bold text-xs text-slate-800 truncate">{business?.businessName}</p>
-                <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide truncate">
-                  {business?.businessType?.toLowerCase()}
-                </p>
+                <p className="font-bold text-xs text-slate-800 group-hover:text-blue-600 truncate">{business?.businessName}</p>
+                <div className="flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                  <span className="text-[10px] text-slate-400 font-mono uppercase">{business?.businessType}</span>
+                </div>
               </div>
             </div>
-            <ArrowUpDown className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+            <ArrowUpDown className="h-3.5 w-3.5 text-slate-400 group-hover:text-blue-600 shrink-0" />
           </button>
 
-          <a className="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all duration-200 mt-2" href="#">
-            <Settings className="h-4 w-4" />
-            Settings
-          </a>
-          <button 
-            onClick={logout} 
-            className="flex items-center gap-3 px-3 py-2.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all duration-200 text-left w-full"
+          <button
+            onClick={logout}
+            className="flex items-center gap-2.5 px-3 py-2 text-rose-600 hover:bg-rose-50 rounded-xl transition-all duration-200 text-left w-full text-xs font-semibold mt-1"
           >
             <LogOut className="h-4 w-4" />
             Logout
@@ -718,13 +721,13 @@ export const InventoryPage = () => {
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 md:hidden flex">
           <div
-            className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
             onClick={() => setMobileMenuOpen(false)}
           />
           <aside className="relative flex flex-col w-72 max-w-[85%] h-full p-4 gap-2 bg-white shadow-2xl z-10 animate-slideRight">
             <div className="px-3 py-2 flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <img src={logoImg} alt="InventoryHub Logo" className="h-11 w-11 object-contain rounded-xl shadow-sm" />
+                <img src={logoImg} alt="InventoryHub Logo" className="h-10 w-10 object-contain rounded-xl shadow-sm" />
                 <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                   InventoryHub
                 </span>
@@ -738,22 +741,22 @@ export const InventoryPage = () => {
             </div>
 
             <nav className="flex-1 flex flex-col gap-1 overflow-y-auto">
-              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.DASHBOARD); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-sm font-medium">
+              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.DASHBOARD); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-xs font-medium">
                 <LayoutDashboard className="h-4 w-4" /> Dashboard
               </button>
-              <a className="flex items-center gap-3 px-3 py-2.5 bg-blue-50 text-blue-700 rounded-xl font-semibold text-sm" href="#">
+              <a className="flex items-center gap-3 px-3 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-xs" href="#">
                 <Boxes className="h-4 w-4" /> Inventory
               </a>
-              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.ORDERS); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-sm font-medium">
+              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.ORDERS); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-xs font-medium">
                 <ShoppingCart className="h-4 w-4" /> Orders
               </button>
-              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.SUPPLIERS); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-sm font-medium">
+              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.SUPPLIERS); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-xs font-medium">
                 <Truck className="h-4 w-4" /> Suppliers
               </button>
-              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.STOCK_HISTORY); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-sm font-medium">
+              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.STOCK_HISTORY); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-xs font-medium">
                 <History className="h-4 w-4" /> Stock History
               </button>
-              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.MESSAGING); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-sm font-medium">
+              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.MESSAGING); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-blue-600 hover:bg-blue-50 rounded-xl transition-all text-left text-xs font-semibold">
                 <MessageSquare className="h-4 w-4" /> Business Chat
               </button>
             </nav>
@@ -771,7 +774,7 @@ export const InventoryPage = () => {
                 </div>
                 <ArrowUpDown className="h-3.5 w-3.5 text-slate-400 shrink-0" />
               </button>
-              <button onClick={logout} className="flex items-center gap-3 px-3 py-2.5 text-red-600 hover:bg-red-50 rounded-xl transition-all text-left w-full text-sm font-semibold">
+              <button onClick={logout} className="flex items-center gap-3 px-3 py-2.5 text-rose-600 hover:bg-rose-50 rounded-xl transition-all text-left w-full text-xs font-semibold">
                 <LogOut className="h-4 w-4" /> Sign Out
               </button>
             </div>
@@ -782,7 +785,7 @@ export const InventoryPage = () => {
       {/* Main Content Area */}
       <main className="flex-1 ml-0 md:ml-64 flex flex-col h-screen overflow-hidden">
         {/* TopNavBar */}
-        <header className="sticky top-0 w-full z-30 h-[72px] flex justify-between items-center px-4 sm:px-6 py-3 bg-white/80 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
+        <header className="sticky top-0 w-full z-30 h-[68px] flex justify-between items-center px-4 sm:px-6 py-3 bg-white/85 backdrop-blur-xl border-b border-slate-200/80 shadow-sm">
           <div className="flex items-center gap-3 md:hidden">
             <button
               onClick={() => setMobileMenuOpen(true)}
@@ -795,7 +798,8 @@ export const InventoryPage = () => {
             </span>
           </div>
 
-          <div className="flex-1 max-w-xl mx-auto flex items-center justify-center">
+
+          <div className="flex-1 max-w-xl mx-auto flex items-center justify-center px-4">
             {activeTab === 'products' && (
               <div className="relative w-full max-w-md hidden md:block">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
@@ -805,7 +809,7 @@ export const InventoryPage = () => {
                     setSearchQuery(e.target.value);
                     setCurrentPage(1);
                   }}
-                  className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-shadow shadow-sm" 
+                  className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none shadow-sm" 
                   placeholder="Search products by SKU or Name..." 
                   type="text"
                 />
@@ -813,15 +817,20 @@ export const InventoryPage = () => {
             )}
           </div>
           <div className="flex items-center gap-2">
-            <button className="p-2 text-slate-500 hover:bg-slate-50 rounded-full transition-colors relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+            <button
+              onClick={() => handleTabChange('requests')}
+              className="p-2 text-slate-500 hover:bg-slate-100 rounded-xl transition-colors relative"
+              title="Stock Requests"
+            >
+              <Bell className="h-4 w-4" />
+              {stockRequests.filter(r => r.status === 'PENDING').length > 0 && (
+                <span className="absolute top-1 right-1 w-4 h-4 bg-rose-500 text-white text-[9px] font-black rounded-full flex items-center justify-center animate-pulse">
+                  {stockRequests.filter(r => r.status === 'PENDING').length}
+                </span>
+              )}
             </button>
-            <button className="p-2 text-slate-500 hover:bg-slate-50 rounded-full transition-colors">
-              <HelpCircle className="h-5 w-5" />
-            </button>
-            <div className="h-9 w-9 rounded-full overflow-hidden border border-slate-200 ml-2 shadow-sm flex items-center justify-center bg-blue-50 text-blue-600 font-bold text-sm select-none">
-              {username?.substring(0, 2).toUpperCase()}
+            <div className="h-9 w-9 rounded-xl border border-blue-400/30 shadow-sm flex items-center justify-center bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-bold text-xs select-none ml-1">
+              {username?.substring(0, 2).toUpperCase() || 'US'}
             </div>
           </div>
         </header>

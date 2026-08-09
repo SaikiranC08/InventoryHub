@@ -104,12 +104,12 @@ const CustomTooltip = ({ active, payload, label }) => {
 const KpiCard = ({ title, value, unit, icon: Icon, color, gradient, trend, trendLabel, onClick }) => (
   <div
     onClick={onClick}
-    className={`bg-white rounded-2xl border border-slate-200/80 p-5 flex flex-col shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden cursor-default ${onClick ? 'cursor-pointer' : ''}`}
+    className={`bg-white rounded-2xl border border-slate-200/90 p-5 flex flex-col shadow-sm hover:shadow-xl hover:border-blue-500/40 hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group cursor-default ${onClick ? 'cursor-pointer' : ''}`}
   >
-    <div className={`absolute top-0 right-0 w-20 h-20 ${gradient} rounded-bl-full pointer-events-none opacity-60`} />
+    <div className={`absolute top-0 right-0 w-24 h-24 ${gradient} rounded-bl-full pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity duration-300`} />
     <div className="flex justify-between items-start mb-3 z-10">
       <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{title}</span>
-      <div className={`p-1.5 rounded-lg border ${color.bg} ${color.border}`}>
+      <div className={`p-2 rounded-xl border ${color.bg} ${color.border} shadow-sm group-hover:scale-110 transition-transform`}>
         <Icon className={`h-4 w-4 ${color.icon}`} />
       </div>
     </div>
@@ -118,7 +118,7 @@ const KpiCard = ({ title, value, unit, icon: Icon, color, gradient, trend, trend
       {unit && <span className="text-xs text-slate-400 font-medium">{unit}</span>}
     </div>
     {trend !== undefined && (
-      <div className={`flex items-center gap-1 text-xs font-bold z-10 ${trend >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+      <div className={`flex items-center gap-1 text-xs font-bold z-10 ${trend >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
         {trend >= 0 ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
         <span className="text-slate-400 font-normal">{trendLabel}</span>
       </div>
@@ -408,54 +408,61 @@ export const DashboardPage = () => {
 
       {/* ── Sidebar ─────────────────────────────────────────────────────── */}
       <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 flex-col p-4 gap-2 bg-white border-r border-slate-200/80 shadow-sm z-40">
-        <div className="px-3 py-2 flex items-center gap-2 mb-6">
-          <img src={logoImg} alt="InventoryHub Logo" className="h-11 w-11 object-contain rounded-xl shadow-sm" />
-          <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            InventoryHub
-          </span>
+        <div className="px-3 py-2 flex items-center gap-3 mb-4">
+          <img src={logoImg} alt="InventoryHub Logo" className="h-10 w-10 object-contain rounded-xl shadow-sm" />
+          <div className="flex flex-col">
+            <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              InventoryHub
+            </span>
+            <span className="text-[9px] uppercase font-mono tracking-widest text-slate-400 font-semibold">
+              Enterprise Deck
+            </span>
+          </div>
         </div>
 
         <nav className="flex-1 flex flex-col gap-1 overflow-y-auto">
-          <a className="flex items-center gap-3 px-3 py-2.5 bg-blue-50 text-blue-700 rounded-xl font-semibold" href="#">
+          <a className="flex items-center gap-3 px-3 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold shadow-md shadow-blue-600/20 text-xs" href="#">
             <LayoutDashboard className="h-4 w-4" /> Dashboard
           </a>
-          <button onClick={() => navigate(ROUTES.INVENTORY)} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left">
-            <Boxes className="h-4 w-4" /> Inventory
+          <button onClick={() => navigate(ROUTES.INVENTORY)} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all text-left text-xs font-medium">
+            <Boxes className="h-4 w-4 text-slate-400" /> Inventory
           </button>
-          <button onClick={() => navigate(ROUTES.ORDERS)} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left">
-            <ShoppingCart className="h-4 w-4" /> Orders
+          <button onClick={() => navigate(ROUTES.ORDERS)} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all text-left text-xs font-medium">
+            <ShoppingCart className="h-4 w-4 text-slate-400" /> Orders & Requests
           </button>
-          <button onClick={() => navigate(ROUTES.SUPPLIERS)} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left">
-            <Truck className="h-4 w-4" /> Suppliers
+          <button onClick={() => navigate(ROUTES.SUPPLIERS)} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all text-left text-xs font-medium">
+            <Truck className="h-4 w-4 text-slate-400" /> Suppliers
           </button>
-          <button onClick={() => navigate(ROUTES.REPORTS)} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left">
-            <BarChart3 className="h-4 w-4" /> Reports
+          <button onClick={() => navigate(ROUTES.REPORTS)} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all text-left text-xs font-medium">
+            <BarChart3 className="h-4 w-4 text-slate-400" /> Reports
           </button>
-          <button onClick={() => navigate(ROUTES.STOCK_HISTORY)} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left">
-            <History className="h-4 w-4" /> Stock History
+          <button onClick={() => navigate(ROUTES.STOCK_HISTORY)} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-xs font-medium">
+            <History className="h-4 w-4 text-slate-400" /> Stock History
           </button>
-          <button onClick={() => navigate(ROUTES.MESSAGING)} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left animate-pulse">
-            <MessageSquare className="h-4 w-4" /> Collaboration
+          <button onClick={() => navigate(ROUTES.MESSAGING)} className="flex items-center gap-3 w-full px-3 py-2.5 text-blue-600 hover:bg-blue-50 rounded-xl transition-all text-left text-xs font-semibold">
+            <MessageSquare className="h-4 w-4 text-blue-500" /> Business Chat
           </button>
         </nav>
 
-        <div className="mt-auto border-t border-slate-100 pt-4 flex flex-col gap-1">
-          <button onClick={() => navigate(ROUTES.BUSINESS_SELECT)} className="flex items-center justify-between w-full px-3 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl border border-slate-200/60 shadow-sm transition-all active:scale-[0.98]">
+        {/* Sidebar Workspace Switcher Pill */}
+        <div className="mt-auto border-t border-slate-100 pt-3 flex flex-col gap-1">
+          <button onClick={() => navigate(ROUTES.BUSINESS_SELECT)} className="flex items-center justify-between w-full px-3 py-2.5 bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-900 rounded-xl border border-slate-200/80 shadow-sm transition-all active:scale-[0.98] group">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
                 <Building2 className="h-4 w-4 text-blue-600" />
               </div>
-              <div className="min-w-0">
-                <p className="font-bold text-xs text-slate-800 truncate">{business?.businessName}</p>
-                <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">{business?.businessType}</p>
+              <div className="min-w-0 text-left">
+                <p className="font-bold text-xs text-slate-800 group-hover:text-blue-600 truncate">{business?.businessName}</p>
+                <div className="flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                  <span className="text-[10px] text-slate-400 font-mono uppercase">{business?.businessType}</span>
+                </div>
               </div>
             </div>
-            <ArrowUpDown className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+            <ArrowUpDown className="h-3.5 w-3.5 text-slate-400 group-hover:text-blue-600 shrink-0" />
           </button>
-          <a className="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all mt-2" href="#">
-            <Settings className="h-4 w-4" /> Settings
-          </a>
-          <button onClick={logout} className="flex items-center gap-3 px-3 py-2.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all text-left w-full">
+
+          <button onClick={logout} className="flex items-center gap-2.5 px-3 py-2 text-rose-600 hover:bg-rose-50 rounded-xl transition-all text-left w-full text-xs font-semibold mt-1">
             <LogOut className="h-4 w-4" /> Logout
           </button>
         </div>
@@ -465,13 +472,13 @@ export const DashboardPage = () => {
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 md:hidden flex">
           <div
-            className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
             onClick={() => setMobileMenuOpen(false)}
           />
           <aside className="relative flex flex-col w-72 max-w-[85%] h-full p-4 gap-2 bg-white shadow-2xl z-10 animate-slideRight">
             <div className="px-3 py-2 flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <img src={logoImg} alt="InventoryHub Logo" className="h-11 w-11 object-contain rounded-xl shadow-sm" />
+                <img src={logoImg} alt="InventoryHub Logo" className="h-10 w-10 object-contain rounded-xl shadow-sm" />
                 <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                   InventoryHub
                 </span>
@@ -485,22 +492,22 @@ export const DashboardPage = () => {
             </div>
 
             <nav className="flex-1 flex flex-col gap-1 overflow-y-auto">
-              <a className="flex items-center gap-3 px-3 py-2.5 bg-blue-50 text-blue-700 rounded-xl font-semibold text-sm" href="#">
+              <a className="flex items-center gap-3 px-3 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-xs" href="#">
                 <LayoutDashboard className="h-4 w-4" /> Dashboard
               </a>
-              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.INVENTORY); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-sm font-medium">
+              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.INVENTORY); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-xs font-medium">
                 <Boxes className="h-4 w-4" /> Inventory
               </button>
-              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.ORDERS); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-sm font-medium">
+              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.ORDERS); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-xs font-medium">
                 <ShoppingCart className="h-4 w-4" /> Orders
               </button>
-              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.SUPPLIERS); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-sm font-medium">
+              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.SUPPLIERS); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-xs font-medium">
                 <Truck className="h-4 w-4" /> Suppliers
               </button>
-              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.STOCK_HISTORY); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-sm font-medium">
+              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.STOCK_HISTORY); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-xs font-medium">
                 <History className="h-4 w-4" /> Stock History
               </button>
-              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.MESSAGING); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-sm font-medium">
+              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.MESSAGING); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-blue-600 hover:bg-blue-50 rounded-xl transition-all text-left text-xs font-semibold">
                 <MessageSquare className="h-4 w-4" /> Business Chat
               </button>
             </nav>
@@ -518,7 +525,7 @@ export const DashboardPage = () => {
                 </div>
                 <ArrowUpDown className="h-3.5 w-3.5 text-slate-400 shrink-0" />
               </button>
-              <button onClick={logout} className="flex items-center gap-3 px-3 py-2.5 text-red-600 hover:bg-red-50 rounded-xl transition-all text-left w-full text-sm font-semibold">
+              <button onClick={logout} className="flex items-center gap-3 px-3 py-2.5 text-rose-600 hover:bg-rose-50 rounded-xl transition-all text-left w-full text-xs font-semibold">
                 <LogOut className="h-4 w-4" /> Sign Out
               </button>
             </div>
@@ -529,8 +536,8 @@ export const DashboardPage = () => {
       {/* ── Main ────────────────────────────────────────────────────────── */}
       <main className="flex-1 ml-0 md:ml-64 flex flex-col h-screen overflow-hidden">
 
-        {/* TopBar */}
-        <header className="sticky top-0 z-30 h-[68px] flex justify-between items-center px-4 sm:px-6 bg-white/80 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
+        {/* TopBar Header */}
+        <header className="sticky top-0 z-30 h-[68px] flex justify-between items-center px-4 sm:px-6 bg-white/85 backdrop-blur-xl border-b border-slate-200/80 shadow-sm">
           <div className="flex items-center gap-3 md:hidden">
             <button
               onClick={() => setMobileMenuOpen(true)}
@@ -543,47 +550,41 @@ export const DashboardPage = () => {
             </span>
           </div>
 
-
-          {/* Business + Date */}
           <div className="hidden md:flex flex-col">
-            <span className="text-base font-black text-slate-900">{business?.businessName}</span>
-            <span className="text-[11px] text-slate-400 font-medium">{today()}</span>
+            <span className="text-base font-black text-slate-900">Dashboard Overview</span>
+            <span className="text-[11px] text-slate-400">{today()}</span>
           </div>
 
-          {/* Search */}
-          <div className="relative flex-1 max-w-sm mx-6 hidden md:block">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4" />
-            <input
-              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm"
-              placeholder="Search inventory..."
-              type="text"
-            />
-          </div>
+
 
           <div className="flex items-center gap-2">
-            {/* Refresh */}
+            {/* Refresh Button */}
             <button
               onClick={() => fetchAll()}
               disabled={refreshing}
-              className="p-2 text-slate-500 hover:bg-slate-50 rounded-xl transition-colors"
+              className="p-2 text-slate-500 hover:bg-slate-100 rounded-xl transition-colors"
               title="Refresh dashboard"
             >
-              <RefreshCw className={`h-5 w-5 ${refreshing ? 'animate-spin text-blue-500' : ''}`} />
+              <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin text-blue-600' : ''}`} />
             </button>
 
             {/* Bell with pending badge */}
-            <button className="relative p-2 text-slate-500 hover:bg-slate-50 rounded-full transition-colors">
-              <Bell className="h-5 w-5" />
+            <button
+              onClick={() => navigate(ROUTES.INVENTORY)}
+              className="relative p-2 text-slate-500 hover:bg-slate-100 rounded-xl transition-colors"
+              title="Pending Requests"
+            >
+              <Bell className="h-4 w-4" />
               {pendingRequests.length > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center">
+                <span className="absolute top-1 right-1 w-4 h-4 bg-rose-500 text-white text-[9px] font-black rounded-full flex items-center justify-center animate-pulse">
                   {pendingRequests.length}
                 </span>
               )}
             </button>
 
-            {/* Avatar */}
-            <div className="h-9 w-9 rounded-full border border-slate-200 shadow-sm flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold text-sm select-none ml-1">
-              {username?.substring(0, 2).toUpperCase()}
+            {/* User Avatar Pill */}
+            <div className="h-9 w-9 rounded-xl border border-blue-400/30 shadow-sm flex items-center justify-center bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-bold text-xs select-none ml-1">
+              {username?.substring(0, 2).toUpperCase() || 'US'}
             </div>
           </div>
         </header>

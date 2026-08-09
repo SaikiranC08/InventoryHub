@@ -31,6 +31,7 @@ import {
   ChevronLeft,
   History,
   ArrowUpDown,
+  ArrowRight,
 } from 'lucide-react';
 
 
@@ -467,102 +468,107 @@ export const CollaborationPage = () => {
 
       {/* ── Desktop Left Navigation Sidebar ─────────────────────────── */}
       <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 flex-col p-4 gap-2 bg-white border-r border-slate-200/80 shadow-sm z-40">
-        <div className="px-3 py-2 flex items-center gap-2 mb-6">
-          <img src={logoImg} alt="InventoryHub Logo" className="h-11 w-11 object-contain rounded-xl shadow-sm" />
-          <div>
-            <h1 className="font-black text-sm text-slate-900 tracking-tight leading-none">InventoryHub</h1>
-            <p className="text-[10px] text-slate-400 font-medium mt-0.5">Enterprise Portal</p>
+        <div className="px-3 py-2 flex items-center gap-3 mb-4">
+          <img src={logoImg} alt="InventoryHub Logo" className="h-10 w-10 object-contain rounded-xl shadow-sm" />
+          <div className="flex flex-col">
+            <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              InventoryHub
+            </span>
+            <span className="text-[9px] uppercase font-mono tracking-widest text-slate-400 font-semibold">
+              B2B Live Chat
+            </span>
           </div>
         </div>
-
-        {businessLoading ? (
-          <Skeleton className="h-12 w-full rounded-2xl mb-4" />
-        ) : (
-          <div className="px-3 py-2 bg-slate-50 border border-slate-200/60 rounded-2xl mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-2.5 truncate">
-              <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs shrink-0">
-                {business?.businessName?.substring(0, 1) || 'B'}
-              </div>
-              <div className="truncate">
-                <p className="text-xs font-bold text-slate-900 truncate">{business?.businessName}</p>
-                <p className="text-[9px] text-slate-400 font-mono">ID: {business?.businessId}</p>
-              </div>
-            </div>
-            <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[9px] font-black shrink-0">
-              Active
-            </Badge>
-          </div>
-        )}
 
         <nav className="flex-1 space-y-1">
           <Button
             onClick={() => navigate(ROUTES.DASHBOARD)}
             variant="ghost"
-            className="w-full justify-start text-xs font-semibold text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl py-2.5"
+            className="w-full justify-start text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl py-2.5"
           >
-            <LayoutDashboard className="mr-2.5 h-4 w-4" />
+            <LayoutDashboard className="mr-2.5 h-4 w-4 text-slate-400" />
             Dashboard
           </Button>
 
           <Button
             onClick={() => navigate(ROUTES.INVENTORY)}
             variant="ghost"
-            className="w-full justify-start text-xs font-semibold text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl py-2.5"
+            className="w-full justify-start text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl py-2.5"
           >
-            <Boxes className="mr-2.5 h-4 w-4" />
+            <Boxes className="mr-2.5 h-4 w-4 text-slate-400" />
             Inventory & Stock
           </Button>
 
           <Button
             onClick={() => navigate(ROUTES.ORDERS)}
             variant="ghost"
-            className="w-full justify-start text-xs font-semibold text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl py-2.5"
+            className="w-full justify-start text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl py-2.5"
           >
-            <ShoppingCart className="mr-2.5 h-4 w-4" />
-            Orders
+            <ShoppingCart className="mr-2.5 h-4 w-4 text-slate-400" />
+            Orders & Requests
           </Button>
 
           <Button
             onClick={() => navigate(ROUTES.SUPPLIERS)}
             variant="ghost"
-            className="w-full justify-start text-xs font-semibold text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl py-2.5"
+            className="w-full justify-start text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl py-2.5"
           >
-            <Truck className="mr-2.5 h-4 w-4" />
+            <Truck className="mr-2.5 h-4 w-4 text-slate-400" />
             Suppliers
           </Button>
 
           <Button
             onClick={() => navigate(ROUTES.REPORTS)}
             variant="ghost"
-            className="w-full justify-start text-xs font-semibold text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl py-2.5"
+            className="w-full justify-start text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl py-2.5"
           >
-            <BarChart3 className="mr-2.5 h-4 w-4" />
+            <BarChart3 className="mr-2.5 h-4 w-4 text-slate-400" />
             Reports
           </Button>
 
           <Button
             onClick={() => navigate(ROUTES.STOCK_HISTORY)}
             variant="ghost"
-            className="w-full justify-start text-xs font-semibold text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl py-2.5"
+            className="w-full justify-start text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl py-2.5"
           >
-            <History className="mr-2.5 h-4 w-4" />
+            <History className="mr-2.5 h-4 w-4 text-slate-400" />
             Stock History
           </Button>
 
           <Button
             onClick={() => navigate(ROUTES.MESSAGING)}
-            className="w-full justify-start text-xs font-bold bg-blue-600 text-white rounded-xl py-2.5 shadow-md shadow-blue-500/10"
+            className="w-full justify-start text-xs font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl py-2.5 shadow-md shadow-blue-600/20"
           >
             <MessageSquare className="mr-2.5 h-4 w-4" />
             Business Chat
           </Button>
         </nav>
 
-        <div className="pt-4 border-t border-slate-100">
+        {/* Sidebar Workspace Switcher Pill */}
+        <div className="mt-auto border-t border-slate-100 pt-3 flex flex-col gap-1">
+          <button
+            onClick={() => navigate(ROUTES.BUSINESS_SELECT)}
+            className="flex items-center justify-between w-full px-3 py-2.5 bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-900 rounded-xl border border-slate-200/80 shadow-sm transition-all duration-200 active:scale-[0.98] group"
+          >
+            <div className="flex items-center gap-2.5 text-left min-w-0">
+              <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
+                <Building2 className="h-4 w-4 text-blue-600" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-bold text-xs text-slate-800 group-hover:text-blue-600 truncate">{business?.businessName}</p>
+                <div className="flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                  <span className="text-[10px] text-slate-400 font-mono uppercase">{business?.businessType}</span>
+                </div>
+              </div>
+            </div>
+            <ArrowUpDown className="h-3.5 w-3.5 text-slate-400 group-hover:text-blue-600 shrink-0" />
+          </button>
+
           <Button
             onClick={logout}
             variant="ghost"
-            className="w-full justify-start text-xs font-semibold text-red-600 hover:bg-red-50 rounded-xl py-2.5"
+            className="w-full justify-start text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-xl py-2 mt-1"
           >
             <LogOut className="mr-2.5 h-4 w-4" />
             Sign Out
@@ -643,11 +649,11 @@ export const CollaborationPage = () => {
         <div className="flex-1 flex h-full w-full overflow-hidden">
 
           {/* ── B2B Conversation List Panel ───────────────────────────── */}
-          <div className={`w-full md:w-80 border-r border-slate-200 bg-white flex flex-col h-full shrink-0 ${
+          <div className={`w-full md:w-80 border-r border-slate-200/80 bg-white flex flex-col h-full shrink-0 shadow-sm ${
             activeConv ? 'hidden md:flex' : 'flex'
           }`}>
             {/* Search */}
-            <div className="p-4 border-b border-slate-100 space-y-3">
+            <div className="p-4 border-b border-slate-100 space-y-3 bg-slate-50/50">
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setShowLeftSidebarMobile(true)}
@@ -656,9 +662,9 @@ export const CollaborationPage = () => {
                   <Menu className="h-5 w-5" />
                 </button>
                 <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                   <input
-                    className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-sm"
+                    className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-sm"
                     placeholder="Search business chats..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -667,15 +673,15 @@ export const CollaborationPage = () => {
               </div>
 
               {/* Filter Tabs */}
-              <div className="flex gap-1">
+              <div className="flex gap-1.5">
                 {['ALL', 'UNREAD'].map((f) => (
                   <button
                     key={f}
                     onClick={() => setActiveFilter(f)}
-                    className={`px-3 py-1 text-[10px] font-black rounded-lg transition-all ${
+                    className={`px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all ${
                       activeFilter === f
-                        ? 'bg-blue-600 text-white shadow-sm'
-                        : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                        ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                        : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-100'
                     }`}
                   >
                     {f}
@@ -684,26 +690,30 @@ export const CollaborationPage = () => {
               </div>
             </div>
 
-
             {/* Conversation List */}
             <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
               {loadingConv ? (
                 Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="p-4 space-y-2">
-                    <Skeleton className="h-4 w-2/3 rounded" />
-                    <Skeleton className="h-3 w-1/2 rounded" />
+                    <Skeleton className="h-4 w-2/3 rounded-md" />
+                    <Skeleton className="h-3 w-1/2 rounded-md" />
                   </div>
                 ))
               ) : filteredConversations.length === 0 ? (
-                <div className="p-6 text-center text-slate-400 space-y-2">
-                  <MessageSquare className="h-10 w-10 text-slate-200 mx-auto" />
-                  <p className="text-xs font-semibold">No discussions yet</p>
+                <div className="p-8 text-center text-slate-400 space-y-3">
+                  <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-500 flex items-center justify-center mx-auto border border-blue-100">
+                    <MessageSquare className="h-6 w-6" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs font-bold text-slate-700">No active discussions</p>
+                    <p className="text-[11px] text-slate-400">Search marketplace listings to initiate trade chats.</p>
+                  </div>
                   <Button
                     onClick={() => navigate(ROUTES.INVENTORY)}
                     size="sm"
-                    className="mt-2 bg-blue-600 text-white text-[10px] rounded-lg"
+                    className="mt-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl h-9 px-4 shadow-md shadow-blue-600/20"
                   >
-                    Find Businesses in Marketplace
+                    Explore Marketplace
                   </Button>
                 </div>
               ) : (
@@ -713,30 +723,32 @@ export const CollaborationPage = () => {
                     <div
                       key={c.otherBusinessId}
                       onClick={() => handleSelectConversation(c)}
-                      className={`p-4 cursor-pointer transition-all flex items-start gap-3 relative ${
-                        isActive ? 'bg-blue-50/50 border-l-4 border-blue-600' : 'hover:bg-slate-50'
+                      className={`p-3.5 cursor-pointer transition-all flex items-start gap-3 relative ${
+                        isActive
+                          ? 'bg-blue-50/70 border-l-4 border-blue-600 shadow-sm'
+                          : 'hover:bg-slate-50'
                       }`}
                     >
-                      <div className="w-10 h-10 rounded-xl bg-blue-100/50 border border-blue-200/50 flex items-center justify-center font-bold text-blue-700 shrink-0 shadow-sm">
+                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-md border border-blue-400/30">
                         {c.otherBusinessName.substring(0, 2).toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-baseline mb-0.5">
-                          <p className="text-xs font-black text-slate-900 truncate pr-2">
+                          <p className="text-xs font-extrabold text-slate-900 truncate pr-2">
                             {c.otherBusinessName}
                           </p>
                           {c.lastMessageTime && (
-                            <span className="text-[9px] text-slate-400 shrink-0 font-medium">
+                            <span className="text-[9px] text-slate-400 font-mono shrink-0">
                               {new Date(c.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           )}
                         </div>
-                        <p className="text-[10px] text-slate-500 truncate mt-0.5">
+                        <p className="text-[11px] text-slate-500 truncate mt-0.5 font-medium">
                           {c.lastMessage}
                         </p>
                       </div>
                       {c.unreadCount > 0 && (
-                        <span className="bg-red-500 text-white text-[9px] font-black rounded-full h-4 min-w-4 flex items-center justify-center px-1 self-center">
+                        <span className="bg-rose-500 text-white text-[9px] font-black rounded-full h-4 min-w-4 flex items-center justify-center px-1.5 self-center shadow-sm animate-pulse">
                           {c.unreadCount}
                         </span>
                       )}
@@ -747,34 +759,37 @@ export const CollaborationPage = () => {
             </div>
           </div>
 
-          {/* ── WhatsApp-Style Plain Chat Workspace ─────────────────────── */}
-          <div className={`flex-1 flex flex-col h-full bg-slate-50/50 relative overflow-hidden ${
+          {/* ── Modern Chat Workspace ─────────────────────── */}
+          <div className={`flex-1 flex flex-col h-full bg-gradient-to-b from-slate-50 via-blue-50/10 to-slate-100/60 relative overflow-hidden ${
             !activeConv ? 'hidden md:flex' : 'flex'
           }`}>
             {activeConv ? (
               <>
                 {/* Active Chat Header */}
-                <div className="bg-white border-b border-slate-200/80 px-4 sm:px-6 py-4 flex items-center justify-between shrink-0 shadow-sm z-10">
+                <div className="bg-white/90 backdrop-blur-xl border-b border-slate-200/80 px-4 sm:px-6 py-3.5 flex items-center justify-between shrink-0 shadow-sm z-10">
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => setActiveConv(null)}
-                      className="md:hidden p-1.5 text-slate-500 hover:bg-slate-100 rounded-lg shrink-0"
+                      className="md:hidden p-1.5 text-slate-500 hover:bg-slate-100 rounded-xl shrink-0"
                       title="Back to chats"
                     >
                       <ChevronLeft className="h-5 w-5" />
                     </button>
-                    <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center font-bold text-white shrink-0 shadow-sm">
+                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-md border border-blue-400/30">
                       {activeConv.otherBusinessName.substring(0, 2).toUpperCase()}
                     </div>
 
                     <div>
-                      <h2 className="text-sm font-black text-slate-900 leading-tight">
+                      <h2 className="text-sm font-extrabold text-slate-900 leading-tight">
                         {activeConv.otherBusinessName}
                       </h2>
                       <div className="flex items-center gap-1.5 mt-0.5">
-                        <span className={`w-2 h-2 rounded-full ${connected ? 'bg-emerald-500' : 'bg-slate-300'}`} />
-                        <span className="text-[10px] text-slate-400 font-medium">
-                          {connected ? 'Connected' : 'Offline'}
+                        <span className="relative flex h-2 w-2">
+                          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${connected ? 'bg-emerald-400' : 'bg-slate-300'} opacity-75`} />
+                          <span className={`relative inline-flex rounded-full h-2 w-2 ${connected ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-medium">
+                          {connected ? 'Online' : 'Connecting...'}
                         </span>
                       </div>
                     </div>
@@ -784,22 +799,22 @@ export const CollaborationPage = () => {
                     onClick={() => navigate(ROUTES.INVENTORY)}
                     size="sm"
                     variant="outline"
-                    className="h-8 text-[10px] font-black rounded-lg border-slate-200 text-slate-700"
+                    className="h-9 px-3.5 text-xs font-semibold rounded-xl border-slate-200 hover:bg-slate-50 text-slate-700 shadow-sm"
                   >
-                    Search Marketplace
+                    Marketplace <ArrowRight className="h-3.5 w-3.5 ml-1 text-blue-600" />
                   </Button>
                 </div>
 
-                {/* ── CHAT MESSAGE STREAM WITH INFINITE SCROLL UP ───────────── */}
+                {/* ── CHAT MESSAGE STREAM ───────────── */}
                 <div
                   ref={chatContainerRef}
                   onScroll={handleScroll}
-                  className="flex-1 overflow-y-auto p-6 space-y-4"
+                  className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4"
                 >
                   {/* Loading Older Messages Spinner */}
                   {loadingMore && (
                     <div className="flex justify-center py-2">
-                      <div className="bg-white border border-slate-200/80 rounded-full px-3 py-1 text-[10px] text-slate-500 font-semibold flex items-center gap-1.5 shadow-sm">
+                      <div className="bg-white border border-slate-200/80 rounded-full px-3.5 py-1 text-[10px] text-slate-500 font-semibold flex items-center gap-1.5 shadow-sm">
                         <Loader2 className="h-3 w-3 animate-spin text-blue-600" />
                         <span>Loading older messages...</span>
                       </div>
@@ -811,16 +826,22 @@ export const CollaborationPage = () => {
                       <div key={i} className="flex gap-2">
                         <Skeleton className="w-8 h-8 rounded-full" />
                         <div className="space-y-1 flex-1">
-                          <Skeleton className="h-3 w-1/3 rounded" />
+                          <Skeleton className="h-3 w-1/3 rounded-md" />
                           <Skeleton className="h-10 w-2/3 rounded-xl" />
                         </div>
                       </div>
                     ))
                   ) : messages.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center text-slate-400 h-full gap-2">
-                      <MessageSquare className="h-12 w-12 text-slate-200" />
-                      <p className="text-sm font-semibold">Start of B2B Conversation</p>
-                      <p className="text-xs text-slate-400">Send a message to start communicating with {activeConv.otherBusinessName}.</p>
+                    <div className="flex flex-col items-center justify-center text-slate-400 h-full gap-3">
+                      <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shadow-inner">
+                        <MessageSquare className="h-7 w-7" />
+                      </div>
+                      <div className="text-center space-y-1">
+                        <p className="text-sm font-bold text-slate-800">Start B2B Trade Conversation</p>
+                        <p className="text-xs text-slate-400 max-w-xs">
+                          Send a message to discuss stock availability, price quotes, or delivery schedules with {activeConv.otherBusinessName}.
+                        </p>
+                      </div>
                     </div>
                   ) : (
                     messages.map((m, idx) => {
@@ -829,25 +850,28 @@ export const CollaborationPage = () => {
                       return (
                         <div
                           key={m.messageId || m.clientCorrelationId || idx}
-                          className={`flex gap-3 max-w-[80%] ${isMe ? 'ml-auto flex-row-reverse' : 'mr-auto'}`}
-                          style={{ animation: 'fadeUp 0.2s ease' }}
+                          className={`flex gap-2.5 max-w-[80%] ${isMe ? 'ml-auto justify-end' : 'mr-auto justify-start'}`}
+                          style={{ animation: 'fadeIn 0.2s ease-out' }}
                         >
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${
-                            isMe ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-700'
-                          }`}>
-                            {isMe ? 'ME' : activeConv.otherBusinessName.substring(0, 1).toUpperCase()}
-                          </div>
+                          {!isMe && (
+                            <div className="w-8 h-8 rounded-xl bg-slate-200 text-slate-700 border border-slate-300 flex items-center justify-center font-bold text-[11px] shrink-0 shadow-sm">
+                              {activeConv.otherBusinessName.substring(0, 1).toUpperCase()}
+                            </div>
+                          )}
 
-                          <div className="space-y-1">
-                            <div className={`p-3 rounded-2xl shadow-sm text-xs leading-relaxed ${
-                              isMe ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-white text-slate-800 rounded-tl-none border border-slate-200/60'
+                          <div className="space-y-1 max-w-md">
+                            <div className={`p-3.5 rounded-2xl text-xs leading-relaxed shadow-md ${
+                              isMe
+                                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-tr-xs'
+                                : 'bg-white text-slate-800 rounded-tl-xs border border-slate-200/80 shadow-sm'
                             }`}>
-                              <p>{m.content}</p>
+                              <p className="whitespace-pre-wrap break-words">{m.content}</p>
                             </div>
 
-                            <p className="text-[9px] text-slate-400 font-medium text-right">
-                              {new Date(m.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </p>
+                            <div className={`flex items-center gap-1.5 text-[9px] font-mono text-slate-400 ${isMe ? 'justify-end' : 'justify-start'}`}>
+                              <span>{new Date(m.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                              {isMe && <span className="text-blue-500 font-bold">✓✓</span>}
+                            </div>
                           </div>
                         </div>
                       );
@@ -857,11 +881,11 @@ export const CollaborationPage = () => {
                 </div>
 
                 {/* ── BOTTOM MESSAGE INPUT BAR ────────────────────────────── */}
-                <div className="p-4 bg-white border-t border-slate-200/80 shrink-0">
-                  <form onSubmit={handleSendMessage} className="flex gap-2 items-center">
+                <div className="p-3.5 bg-white/95 backdrop-blur-md border-t border-slate-200/80 shrink-0 shadow-lg">
+                  <form onSubmit={handleSendMessage} className="flex gap-2 items-center max-w-4xl mx-auto">
                     <input
                       type="text"
-                      className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all shadow-inner"
+                      className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none transition-all shadow-inner font-medium"
                       placeholder={`Type a message to ${activeConv.otherBusinessName}...`}
                       value={messageText}
                       onChange={(e) => setMessageText(e.target.value)}
@@ -869,18 +893,25 @@ export const CollaborationPage = () => {
                     <Button
                       type="submit"
                       disabled={!messageText.trim()}
-                      className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl px-5 h-10 shadow-md shadow-blue-500/20 text-xs font-bold shrink-0 transition-all"
+                      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-2xl px-5 h-9 shadow-md shadow-blue-600/20 text-xs font-bold shrink-0 transition-all flex items-center gap-1.5"
                     >
-                      <Send className="h-4 w-4 mr-1.5" /> Send
+                      <span>Send</span>
+                      <Send className="h-3.5 w-3.5" />
                     </Button>
                   </form>
                 </div>
               </>
             ) : (
-              <div className="flex flex-col items-center justify-center h-full text-slate-400 space-y-3">
-                <MessageSquare className="h-16 w-16 text-slate-200" />
-                <p className="text-base font-bold text-slate-700">Select a business chat to start messaging</p>
-                <p className="text-xs text-slate-400">Search marketplace listings to connect with other businesses.</p>
+              <div className="flex flex-col items-center justify-center h-full text-slate-400 space-y-3 p-6">
+                <div className="w-16 h-16 rounded-3xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shadow-lg">
+                  <MessageSquare className="h-8 w-8" />
+                </div>
+                <div className="text-center space-y-1 max-w-sm">
+                  <p className="text-base font-extrabold text-slate-800">Select a B2B Business Chat</p>
+                  <p className="text-xs text-slate-400">
+                    Collaborate directly with partner warehouses and stores to negotiate stock requests or supply agreements.
+                  </p>
+                </div>
               </div>
             )}
           </div>

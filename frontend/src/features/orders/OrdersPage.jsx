@@ -7,6 +7,7 @@ import { getBusinessId } from '@/utils/tokenStorage';
 import { businessApi } from '@/api/business.api';
 import { inventoryApi } from '@/api/inventory.api';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import {
@@ -159,76 +160,81 @@ export const OrdersPage = () => {
     <div className="font-sans text-slate-800 antialiased flex h-screen overflow-hidden bg-slate-50/50">
       {/* ── Sidebar ─────────────────────────────────────────────────────── */}
       <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 flex-col p-4 gap-2 bg-white border-r border-slate-200/80 shadow-sm z-40">
-        <div className="px-3 py-2 flex items-center gap-2 mb-6">
-          <img src={logoImg} alt="InventoryHub Logo" className="h-11 w-11 object-contain rounded-xl shadow-sm" />
-          <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            InventoryHub
-          </span>
+        <div className="px-3 py-2 flex items-center gap-3 mb-4">
+          <img src={logoImg} alt="InventoryHub Logo" className="h-10 w-10 object-contain rounded-xl shadow-sm" />
+          <div className="flex flex-col">
+            <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              InventoryHub
+            </span>
+            <span className="text-[9px] uppercase font-mono tracking-widest text-slate-400 font-semibold">
+              Order Ledger
+            </span>
+          </div>
         </div>
         <nav className="flex-1 flex flex-col gap-1 overflow-y-auto">
           <button
             onClick={() => navigate(ROUTES.DASHBOARD)}
-            className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left"
+            className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all text-left text-xs font-medium"
           >
-            <LayoutDashboard className="h-4 w-4" /> Dashboard
+            <LayoutDashboard className="h-4 w-4 text-slate-400" /> Dashboard
           </button>
           <button
             onClick={() => navigate(ROUTES.INVENTORY)}
-            className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left"
+            className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all text-left text-xs font-medium"
           >
-            <Boxes className="h-4 w-4" /> Inventory
+            <Boxes className="h-4 w-4 text-slate-400" /> Inventory
           </button>
           <button
             onClick={() => navigate(ROUTES.ORDERS)}
-            className="flex items-center gap-3 w-full px-3 py-2.5 bg-blue-50 text-blue-700 rounded-xl font-semibold text-left"
+            className="flex items-center gap-3 w-full px-3 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold shadow-md shadow-blue-600/20 text-left text-xs"
           >
-            <ShoppingCart className="h-4 w-4" /> Orders
+            <ShoppingCart className="h-4 w-4" /> Orders & Requests
           </button>
           <button
             onClick={() => navigate(ROUTES.SUPPLIERS)}
-            className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left"
+            className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all text-left text-xs font-medium"
           >
-            <Truck className="h-4 w-4" /> Suppliers
+            <Truck className="h-4 w-4 text-slate-400" /> Suppliers
           </button>
           <button
             onClick={() => navigate(ROUTES.REPORTS)}
-            className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left"
+            className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all text-left text-xs font-medium"
           >
-            <BarChart3 className="h-4 w-4" /> Reports
+            <BarChart3 className="h-4 w-4 text-slate-400" /> Reports
           </button>
           <button
             onClick={() => navigate(ROUTES.STOCK_HISTORY)}
-            className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left"
+            className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-xs font-medium"
           >
-            <History className="h-4 w-4" /> Stock History
+            <History className="h-4 w-4 text-slate-400" /> Stock History
           </button>
           <button
             onClick={() => navigate(ROUTES.MESSAGING)}
-            className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left"
+            className="flex items-center gap-3 w-full px-3 py-2.5 text-blue-600 hover:bg-blue-50 rounded-xl transition-all text-left text-xs font-semibold"
           >
-            <MessageSquare className="h-4 w-4" /> Collaboration
+            <MessageSquare className="h-4 w-4 text-blue-500" /> Business Chat
           </button>
         </nav>
-        <div className="mt-auto border-t border-slate-100 pt-4 flex flex-col gap-1">
+        <div className="mt-auto border-t border-slate-100 pt-3 flex flex-col gap-1">
           <button
             onClick={() => navigate(ROUTES.BUSINESS_SELECT)}
-            className="flex items-center justify-between w-full px-3 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl border border-slate-200/60 shadow-sm transition-all"
+            className="flex items-center justify-between w-full px-3 py-2.5 bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-900 rounded-xl border border-slate-200/80 shadow-sm transition-all duration-200 active:scale-[0.98] group"
           >
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
                 <Building2 className="h-4 w-4 text-blue-600" />
               </div>
-              <div className="min-w-0">
-                <p className="font-bold text-xs text-slate-800 truncate">{business?.businessName}</p>
-                <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">{business?.businessType}</p>
+              <div className="min-w-0 text-left">
+                <p className="font-bold text-xs text-slate-800 group-hover:text-blue-600 truncate">{business?.businessName}</p>
+                <div className="flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                  <span className="text-[10px] text-slate-400 font-mono uppercase">{business?.businessType}</span>
+                </div>
               </div>
             </div>
-            <ArrowUpDown className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+            <ArrowUpDown className="h-3.5 w-3.5 text-slate-400 group-hover:text-blue-600 shrink-0" />
           </button>
-          <a className="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all mt-2" href="#">
-            <Settings className="h-4 w-4" /> Settings
-          </a>
-          <button onClick={logout} className="flex items-center gap-3 px-3 py-2.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all text-left w-full">
+          <button onClick={logout} className="flex items-center gap-2.5 px-3 py-2 text-rose-600 hover:bg-rose-50 rounded-xl transition-all text-left w-full text-xs font-semibold mt-1">
             <LogOut className="h-4 w-4" /> Logout
           </button>
         </div>
@@ -237,11 +243,11 @@ export const OrdersPage = () => {
       {/* ── Mobile Sidebar Drawer ───────────────────────────────────────── */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 md:hidden flex">
-          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onClick={() => setMobileMenuOpen(false)} />
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setMobileMenuOpen(false)} />
           <aside className="relative flex flex-col w-72 max-w-[85%] h-full p-4 gap-2 bg-white shadow-2xl z-10 animate-slideRight">
             <div className="px-3 py-2 flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <img src={logoImg} alt="InventoryHub Logo" className="h-11 w-11 object-contain rounded-xl shadow-sm" />
+                <img src={logoImg} alt="InventoryHub Logo" className="h-10 w-10 object-contain rounded-xl shadow-sm" />
                 <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                   InventoryHub
                 </span>
@@ -252,26 +258,23 @@ export const OrdersPage = () => {
             </div>
 
             <nav className="flex-1 flex flex-col gap-1 overflow-y-auto">
-              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.DASHBOARD); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-sm font-medium">
+              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.DASHBOARD); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-xs font-medium">
                 <LayoutDashboard className="h-4 w-4" /> Dashboard
               </button>
-              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.INVENTORY); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-sm font-medium">
+              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.INVENTORY); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-xs font-medium">
                 <Boxes className="h-4 w-4" /> Inventory
               </button>
-              <a className="flex items-center gap-3 px-3 py-2.5 bg-blue-50 text-blue-700 rounded-xl font-semibold text-sm" href="#">
+              <a className="flex items-center gap-3 px-3 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-xs" href="#">
                 <ShoppingCart className="h-4 w-4" /> Orders
               </a>
-              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.SUPPLIERS); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-sm font-medium">
+              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.SUPPLIERS); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-xs font-medium">
                 <Truck className="h-4 w-4" /> Suppliers
               </button>
-              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.REPORTS); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-sm font-medium">
-                <BarChart3 className="h-4 w-4" /> Reports
-              </button>
-              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.STOCK_HISTORY); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-sm font-medium">
+              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.STOCK_HISTORY); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-xs font-medium">
                 <History className="h-4 w-4" /> Stock History
               </button>
-              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.MESSAGING); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all text-left text-sm font-medium">
-                <MessageSquare className="h-4 w-4" /> Collaboration
+              <button onClick={() => { setMobileMenuOpen(false); navigate(ROUTES.MESSAGING); }} className="flex items-center gap-3 w-full px-3 py-2.5 text-blue-600 hover:bg-blue-50 rounded-xl transition-all text-left text-xs font-semibold">
+                <MessageSquare className="h-4 w-4" /> Business Chat
               </button>
             </nav>
 
@@ -288,7 +291,7 @@ export const OrdersPage = () => {
                 </div>
                 <ArrowUpDown className="h-3.5 w-3.5 text-slate-400 shrink-0" />
               </button>
-              <button onClick={logout} className="flex items-center gap-3 px-3 py-2.5 text-red-600 hover:bg-red-50 rounded-xl transition-all text-left w-full text-sm font-semibold">
+              <button onClick={logout} className="flex items-center gap-3 px-3 py-2.5 text-rose-600 hover:bg-rose-50 rounded-xl transition-all text-left w-full text-xs font-semibold">
                 <LogOut className="h-4 w-4" /> Sign Out
               </button>
             </div>
@@ -299,25 +302,23 @@ export const OrdersPage = () => {
       {/* ── Main Workspace ───────────────────────────────────────────────── */}
       <main className="flex-1 ml-0 md:ml-64 flex flex-col h-screen overflow-hidden">
         {/* Top Header */}
-        <header className="sticky top-0 z-30 h-[68px] flex justify-between items-center px-6 bg-white/80 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
+        <header className="sticky top-0 z-30 h-[68px] flex justify-between items-center px-4 sm:px-6 bg-white/85 backdrop-blur-xl border-b border-slate-200/80 shadow-sm">
           <div className="flex items-center gap-3 md:hidden">
-            <button onClick={() => setMobileMenuOpen(true)} className="p-2 text-slate-500 hover:bg-slate-50 rounded-xl">
+            <button onClick={() => setMobileMenuOpen(true)} className="p-2 text-slate-500 hover:bg-slate-100 rounded-xl">
               <Menu className="h-5 w-5" />
             </button>
           </div>
-          <div className="hidden md:flex flex-col">
-            <span className="text-base font-black text-slate-900">Orders Management</span>
-            <span className="text-[11px] text-slate-400">Commercial Sales & Purchase Orders for {business?.businessName}</span>
-          </div>
+
+
 
           <div className="flex items-center gap-2 ml-auto">
             <button
               onClick={fetchOrders}
               disabled={refreshing}
-              className="p-2 text-slate-500 hover:bg-slate-50 rounded-xl transition-colors"
+              className="p-2 text-slate-500 hover:bg-slate-100 rounded-xl transition-colors"
               title="Refresh Orders"
             >
-              <RefreshCw className={`h-5 w-5 ${refreshing ? 'animate-spin text-blue-500' : ''}`} />
+              <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin text-blue-600' : ''}`} />
             </button>
             <div className="h-9 w-9 rounded-full border border-slate-200 shadow-sm flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold text-sm select-none ml-1">
               {username?.substring(0, 2).toUpperCase()}
