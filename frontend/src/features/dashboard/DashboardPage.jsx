@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { ForbiddenState } from '@/components/ForbiddenState';
 import {
   AreaChart,
   Area,
@@ -214,7 +215,11 @@ export const DashboardPage = () => {
       const data = await dashboardApi.getDashboardSummary();
       setSummary(data);
     } catch (err) {
-      setSummaryError(err?.message || 'Failed to load summary.');
+      const msg = err?.message || 'Failed to load summary.';
+      setSummaryError(msg);
+      if (err?.status === 403 || err?.isForbidden || msg.toLowerCase().includes('authorized') || msg.toLowerCase().includes('forbidden')) {
+        toast.error(`403 Forbidden: ${msg}`);
+      }
     } finally {
       setSummaryLoading(false);
     }
@@ -611,13 +616,7 @@ export const DashboardPage = () => {
 
             {/* ── KPI Grid ──────────────────────────────────────────────── */}
             {summaryError ? (
-              <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
-                <AlertCircle className="h-8 w-8 text-red-400 mx-auto mb-2" />
-                <p className="text-red-700 font-semibold text-sm">{summaryError}</p>
-                <Button onClick={fetchSummary} size="sm" className="mt-3 bg-red-600 hover:bg-red-700 text-white rounded-xl">
-                  Retry
-                </Button>
-              </div>
+              <ForbiddenState message={summaryError} onRetry={fetchAll} />
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
                 {summaryLoading

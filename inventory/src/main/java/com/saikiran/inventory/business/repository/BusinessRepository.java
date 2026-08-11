@@ -20,6 +20,8 @@ public interface BusinessRepository extends JpaRepository<Business,Long> {
 
     Optional<Business> findBusinessByBusinessId(Long businessId);
 
+    boolean existsByBusinessIdAndOwnerId(Long businessId, Long ownerId);
+
     @Query("SELECT b.businessId FROM Business b WHERE b.ownerId = :ownerId")
     Optional<Long> findBusinessIdByOwnerId(@Param("ownerId") Long ownerId);
 }

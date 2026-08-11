@@ -62,6 +62,11 @@ class InventoryControllerTest {
     @MockitoBean
     private com.saikiran.inventory.inventory.service.OrderQueryService orderQueryService;
 
+    @org.junit.jupiter.api.BeforeEach
+    void setUp() {
+        when(businessService.isUserOwnerOfBusiness(any(), any())).thenReturn(true);
+    }
+
     @Test
     void shouldAddInventoryStockWhenExternalSupplierProvidesStock() throws Exception {
 

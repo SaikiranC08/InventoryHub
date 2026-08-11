@@ -39,8 +39,8 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
-    @ExceptionHandler(ConversationAccessDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleAccessDenied(ConversationAccessDeniedException ex) {
+    @ExceptionHandler({ConversationAccessDeniedException.class, BusinessAccessDeniedException.class})
+    public ResponseEntity<ErrorResponse> handleAccessDenied(RuntimeException ex) {
         return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage());
     }
 

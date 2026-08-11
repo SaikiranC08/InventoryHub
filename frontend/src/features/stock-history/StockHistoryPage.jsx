@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { ForbiddenState } from '@/components/ForbiddenState';
 import {
   Building2,
   LayoutDashboard,
@@ -324,7 +325,11 @@ export const StockHistoryPage = () => {
       const data = await inventoryApi.getStockMovements();
       setMovements(data || []);
     } catch (err) {
-      setError(err?.message || 'Failed to load stock movements.');
+      const msg = err?.message || 'Failed to load stock movements.';
+      setError(msg);
+      if (err?.status === 403 || err?.isForbidden || msg.toLowerCase().includes('authorized') || msg.toLowerCase().includes('forbidden')) {
+        toast.error(`403 Forbidden: ${msg}`);
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -531,8 +536,11 @@ export const StockHistoryPage = () => {
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
           <div className="p-6 max-w-full mx-auto space-y-4 pb-10">
-
-            {/* Page header */}
+            {error ? (
+              <ForbiddenState message={error} onRetry={fetchMovements} />
+            ) : (
+              <>
+                {/* Page header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b border-slate-200/50">
               <div>
                 <h1 className="text-2xl font-black text-slate-900 tracking-tight">Stock Movement History</h1>
@@ -738,9 +746,11 @@ export const StockHistoryPage = () => {
                 </div>
               )}
             </div>
-          </div>
-        </div>
-      </main>
+          </>
+        )}
+      </div>
+    </div>
+  </main>
 
       {/* Detail Drawer */}
       {selectedMovement && (

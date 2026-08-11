@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { ForbiddenState } from '@/components/ForbiddenState';
 import { 
   Building2, 
   LayoutDashboard, 
@@ -209,7 +210,11 @@ export const InventoryPage = () => {
       setInventoryList(data || []);
     } catch (err) {
       console.error('Error fetching inventory:', err);
-      setInventoryError('Could not retrieve inventory items.');
+      const msg = err?.message || 'Could not retrieve inventory items.';
+      setInventoryError(msg);
+      if (err?.status === 403 || err?.isForbidden || msg.toLowerCase().includes('authorized') || msg.toLowerCase().includes('forbidden')) {
+        toast.error(`403 Forbidden: ${msg}`);
+      }
     } finally {
       setInventoryLoading(false);
     }
@@ -1018,15 +1023,7 @@ export const InventoryPage = () => {
                       <Skeleton className="h-10 w-full rounded-lg" />
                     </div>
                   ) : inventoryError ? (
-                    /* Error State */
-                    <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center text-red-800 space-y-3">
-                      <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />
-                      <h3 className="font-bold text-lg">Failed to Retrieve Inventory</h3>
-                      <p className="text-sm text-red-655 max-w-md mx-auto">{inventoryError}</p>
-                      <Button onClick={fetchInventory} className="bg-red-600 hover:bg-red-700 text-white font-semibold">
-                        Retry
-                      </Button>
-                    </div>
+                    <ForbiddenState message={inventoryError} onRetry={fetchInventory} />
                   ) : processedInventory.length === 0 ? (
                     /* Empty State */
                     <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-500 space-y-4 shadow-sm">

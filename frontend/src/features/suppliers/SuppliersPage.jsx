@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { ForbiddenState } from '@/components/ForbiddenState';
 import {
   Building2,
   LayoutDashboard,
@@ -97,8 +98,13 @@ export const SuppliersPage = () => {
       const data = await inventoryApi.getSuppliers();
       setSuppliers(data || []);
     } catch (err) {
-      setError(err?.message || 'Failed to load supplier directory.');
-      toast.error('Failed to load suppliers');
+      const msg = err?.message || 'Failed to load supplier directory.';
+      setError(msg);
+      if (err?.status === 403 || err?.isForbidden || msg.toLowerCase().includes('authorized') || msg.toLowerCase().includes('forbidden')) {
+        toast.error(`403 Forbidden: ${msg}`);
+      } else {
+        toast.error('Failed to load suppliers');
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -363,8 +369,12 @@ export const SuppliersPage = () => {
 
         {/* Scrollable Content Body */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {/* KPI Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          {error ? (
+            <ForbiddenState message={error} onRetry={fetchSuppliers} />
+          ) : (
+            <>
+              {/* KPI Summary Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Active Suppliers</span>
@@ -529,6 +539,8 @@ export const SuppliersPage = () => {
               )}
             </div>
           </div>
+          </>
+          )}
         </div>
       </main>
 

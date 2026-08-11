@@ -116,4 +116,11 @@ public class BusinessService {
         log.debug("Resolved businessId={} for userId={}", businessId, userId);
         return businessId;
     }
+
+    public boolean isUserOwnerOfBusiness(Long userId, Long businessId) {
+        if (userId == null || businessId == null) {
+            return false;
+        }
+        return businessRepository.existsByBusinessIdAndOwnerId(businessId, userId);
+    }
 }

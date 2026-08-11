@@ -48,7 +48,11 @@ export const apiFetch = async (path, options = {}) => {
   const body = response.status === 204 ? null : await parseResponseBody(response);
 
   if (!response.ok) {
-    throw new Error(getErrorMessage(body));
+    const message = getErrorMessage(body);
+    const error = new Error(message);
+    error.status = response.status;
+    error.isForbidden = response.status === 403;
+    throw error;
   }
 
   return body;

@@ -38,6 +38,9 @@ class ProductControllerTest {
     @MockitoBean
     private ProductService productService;
 
+    @MockitoBean
+    private com.saikiran.inventory.business.service.BusinessService businessService;
+
     @Test
     void shouldReturnUnitTypes() throws Exception {
         mockMvc.perform(get("/api/v1/products/unit-types"))
