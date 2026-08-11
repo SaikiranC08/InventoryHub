@@ -248,12 +248,26 @@ export const CollaborationPage = () => {
   };
 
   // ─── 6. WebSocket Connection (SockJS + STOMP) ───────────────────────────────
+  const getWebSocketUrl = () => {
+    if (import.meta.env.VITE_WS_URL) {
+      return import.meta.env.VITE_WS_URL.trim();
+    }
+    const apiBase = (import.meta.env.VITE_API_BASE_URL || '').trim();
+    if (apiBase) {
+      const cleanBase = apiBase.replace(/\/api\/v1\/?$/, '').replace(/\/$/, '');
+      return `${cleanBase}/ws`;
+    }
+    return 'http://localhost:8000/ws';
+  };
+
   useEffect(() => {
     if (!business) return;
 
     setReconnecting(true);
     const token = getAccessToken();
-    const socket = new SockJS(`http://localhost:8000/ws?jwt=${token}`);
+    const wsBaseUrl = getWebSocketUrl();
+    const wsUrl = `${wsBaseUrl}${wsBaseUrl.includes('?') ? '&' : '?'}jwt=${token}`;
+    const socket = new SockJS(wsUrl);
     const client = new Client({
       webSocketFactory: () => socket,
       connectHeaders: {
