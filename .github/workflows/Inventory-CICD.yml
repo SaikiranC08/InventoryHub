@@ -49,9 +49,9 @@ jobs:
           host: ${{ secrets.AZURE_HOST }}
           username: ${{ secrets.AZURE_USERNAME }}
           key: ${{ secrets.AZURE_SSH_KEY }}
-        script: |
-          docker pull $DOCKER_USERNAME/inventoryhub-inventory-service:latest
-          docker stop inventory-service || true
-          docker rm inventory-service || true
-          docker run -d --name inventory-service $DOCKER_USERNAME/inventoryhub-inventory-service:latest
+          script: |
+            docker pull $DOCKER_USERNAME/inventoryhub-inventory-service:latest
+            docker stop inventory-service || true
+            docker rm inventory-service || true
+            docker run -d --name inventory-service $DOCKER_USERNAME/inventoryhub-inventory-service:latest
 
