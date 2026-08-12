@@ -43,15 +43,12 @@ jobs:
 
       - name: Deploy to Azure VM
         uses: appleboy/ssh-action@v1
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         with:
           host: ${{ secrets.AZURE_HOST }}
           username: ${{ secrets.AZURE_USERNAME }}
           key: ${{ secrets.AZURE_SSH_KEY }}
           script: |
-            docker pull $DOCKER_USERNAME/inventoryhub-inventory-service:latest
-            docker stop inventory-service || true
-            docker rm inventory-service || true
-            docker run -d --name inventory-service $DOCKER_USERNAME/inventoryhub-inventory-service:latest
+            cd ~/InventoryHub
+            docker compose pull inventory-service
+            docker compose up -d inventory-service
 
