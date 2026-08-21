@@ -6,6 +6,7 @@ import { ToastProvider } from '@/providers/ToastProvider';
 import { ErrorBoundary } from '@/providers/ErrorBoundary';
 import { AppRoutes } from '@/routes/AppRoutes';
 import { AuthProvider } from '@/context/AuthContext';
+import { BackendWakeProvider } from '@/context/BackendWakeContext';
 
 export function App() {
   return (
@@ -14,9 +15,11 @@ export function App() {
         <ThemeProvider>
           <ToastProvider>
             <BrowserRouter>
-              <AuthProvider>
-                <AppRoutes />
-              </AuthProvider>
+              <BackendWakeProvider>
+                <AuthProvider>
+                  <AppRoutes />
+                </AuthProvider>
+              </BackendWakeProvider>
             </BrowserRouter>
           </ToastProvider>
         </ThemeProvider>

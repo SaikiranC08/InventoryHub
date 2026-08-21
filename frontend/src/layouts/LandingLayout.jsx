@@ -3,12 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
 import { ArrowRight, Github, Linkedin, Mail, ExternalLink, Menu, X } from 'lucide-react';
+import { BackendStatusBanner } from '@/components/BackendStatusBanner';
+import { useBackendWake } from '@/hooks/useBackendWake';
 
 import logoImg from '@/assets/logo.png';
 
 export const LandingLayout = ({ children }) => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { isStarting } = useBackendWake();
 
   return (
     <div className="min-h-screen flex flex-col bg-stitch-surface text-stitch-text font-sans antialiased overflow-x-hidden">
@@ -51,20 +54,24 @@ export const LandingLayout = ({ children }) => {
             </a>
           </nav>
 
-          {/* Desktop Action Buttons & Mobile Hamburger Toggle */}
+          {/* Desktop Action Buttons & Backend Status & Mobile Hamburger Toggle */}
           <div className="flex items-center space-x-2 sm:space-x-3">
+            <BackendStatusBanner className="hidden lg:flex" />
+
             <div className="hidden sm:flex items-center space-x-2">
               <Button
                 variant="ghost"
                 onClick={() => navigate(ROUTES.LOGIN)}
-                className="text-slate-700 hover:text-stitch-primary hover:bg-slate-100/60 font-semibold text-xs sm:text-sm"
+                disabled={isStarting}
+                className="text-slate-700 hover:text-stitch-primary hover:bg-slate-100/60 font-semibold text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Login
               </Button>
               <Button
                 variant="stitch"
                 onClick={() => navigate(ROUTES.REGISTER)}
-                className="shadow-sm text-xs sm:text-sm px-3 sm:px-4"
+                disabled={isStarting}
+                className="shadow-sm text-xs sm:text-sm px-3 sm:px-4 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Get Started <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
               </Button>
@@ -79,6 +86,11 @@ export const LandingLayout = ({ children }) => {
               {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
+        </div>
+
+        {/* Banner on smaller screens inside header bar */}
+        <div className="lg:hidden px-4 pb-2">
+          <BackendStatusBanner />
         </div>
 
         {/* Mobile Dropdown Navigation Menu */}

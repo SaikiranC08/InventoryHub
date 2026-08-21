@@ -13,6 +13,8 @@ import { useRegisterMutation } from './auth.hooks';
 import { useAuth } from '@/hooks/useAuth';
 import { ROUTES } from '@/constants/routes';
 import { User, Mail, Lock, Loader2, AlertCircle, Phone } from 'lucide-react';
+import { BackendStatusBanner } from '@/components/BackendStatusBanner';
+import { useBackendWake } from '@/hooks/useBackendWake';
 
 // Zod Validation Schema
 const registerSchema = z.object({
@@ -29,6 +31,7 @@ export const RegisterPage = () => {
   const navigate = useNavigate();
   const registerMutation = useRegisterMutation();
   const { loading, isAuthenticated, initializeUserBusiness } = useAuth();
+  const { isStarting, isError } = useBackendWake();
   const [authError, setAuthError] = useState(null);
 
   const {
@@ -88,11 +91,14 @@ export const RegisterPage = () => {
     }
   };
 
-  const isPending = isSubmitting || registerMutation.isPending;
+  const isPending = isSubmitting || registerMutation.isPending || isStarting || isError;
 
   return (
     <AuthLayout>
       <div className="space-y-6">
+        {/* Backend Status Banner */}
+        <BackendStatusBanner />
+
         <div className="space-y-2">
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">
             Create your InventoryHub account
@@ -206,10 +212,15 @@ export const RegisterPage = () => {
             className="w-full h-11 text-sm font-semibold"
             disabled={isPending}
           >
-            {isPending ? (
+            {isSubmitting || registerMutation.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Creating Account...
+              </>
+            ) : isStarting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Waiting for backend...
               </>
             ) : (
               'Create Account'
@@ -219,7 +230,10 @@ export const RegisterPage = () => {
 
         <p className="text-center text-xs text-slate-500 pt-2">
           Already have an account?{' '}
-          <Link to={ROUTES.LOGIN} className="font-semibold text-stitch-primary hover:underline">
+          <Link
+            to={isStarting ? '#' : ROUTES.LOGIN}
+            className={`font-semibold text-stitch-primary hover:underline ${isStarting ? 'opacity-50 pointer-events-none' : ''}`}
+          >
             Login
           </Link>
         </p>

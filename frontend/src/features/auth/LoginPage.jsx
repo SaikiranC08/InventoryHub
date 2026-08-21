@@ -12,6 +12,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/hooks/useAuth';
 import { ROUTES } from '@/constants/routes';
 import { Lock, User, Loader2, AlertCircle } from 'lucide-react';
+import { BackendStatusBanner } from '@/components/BackendStatusBanner';
+import { useBackendWake } from '@/hooks/useBackendWake';
 
 // Zod Validation Schema
 const loginSchema = z.object({
@@ -23,6 +25,7 @@ const loginSchema = z.object({
 export const LoginPage = () => {
   const navigate = useNavigate();
   const { loading, isAuthenticated, login, initializeUserBusiness } = useAuth();
+  const { isStarting, isError } = useBackendWake();
   const [authError, setAuthError] = useState(null);
 
   const {
@@ -64,11 +67,14 @@ export const LoginPage = () => {
     }
   };
 
-  const isPending = isSubmitting;
+  const isPending = isSubmitting || isStarting || isError;
 
   return (
     <AuthLayout>
       <div className="space-y-6">
+        {/* Backend Wake Status Banner */}
+        <BackendStatusBanner />
+
         <div className="space-y-2">
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">
             Welcome back to InventoryHub
@@ -136,7 +142,8 @@ export const LoginPage = () => {
             <label className="flex items-center space-x-2 text-xs font-medium text-slate-600 cursor-pointer">
               <input
                 type="checkbox"
-                className="rounded border-slate-300 text-stitch-primary focus:ring-stitch-primary h-4 w-4"
+                disabled={isPending}
+                className="rounded border-slate-300 text-stitch-primary focus:ring-stitch-primary h-4 w-4 disabled:opacity-50"
                 {...register('rememberMe')}
               />
               <span>Remember me on this device</span>
@@ -149,10 +156,15 @@ export const LoginPage = () => {
             className="w-full h-11 text-sm font-semibold"
             disabled={isPending}
           >
-            {isPending ? (
+            {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Signing in...
+              </>
+            ) : isStarting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Waiting for backend...
               </>
             ) : (
               'Sign In'
@@ -162,7 +174,10 @@ export const LoginPage = () => {
 
         <p className="text-center text-xs text-slate-500 pt-2">
           Don't have an account?{' '}
-          <Link to={ROUTES.REGISTER} className="font-semibold text-stitch-primary hover:underline">
+          <Link
+            to={isStarting ? '#' : ROUTES.REGISTER}
+            className={`font-semibold text-stitch-primary hover:underline ${isStarting ? 'opacity-50 pointer-events-none' : ''}`}
+          >
             Create Account
           </Link>
         </p>
