@@ -15,7 +15,7 @@ export default async function handler(req, res) {
 
   try {
     const azureEndpoint =
-      'https://inventoryhub-vm-controller-chb9gsgka2fu.centralindia-01.azurewebsites.net/api/wake';
+      'https://inventoryhub-vm-controller-chb9gsbre9gka2fu.centralindia-01.azurewebsites.net/api/wake';
 
     const azureResponse = await fetch(azureEndpoint, {
       method: 'GET',
@@ -24,12 +24,9 @@ export default async function handler(req, res) {
       }
     });
 
-    const text = await azureResponse.text();
+    const data = await azureResponse.json().catch(() => ({}));
 
-    return res.status(azureResponse.status).json({
-      azureStatus: azureResponse.status,
-      azureResponse: text
-    });
+    return res.status(azureResponse.status).json(data);
 
   } catch (error) {
     return res.status(500).json({
