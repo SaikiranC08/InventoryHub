@@ -9,28 +9,32 @@ export default async function handler(req, res) {
 
   if (!azureKey) {
     return res.status(500).json({
-      error: 'AZURE_FUNCTION_KEY is not configured'
+      error: 'AZURE_FUNCTION_KEY is missing in Vercel'
     });
   }
 
   try {
-    const azureResponse = await fetch(
-      'https://inventoryhub-vm-controller-chb9gsgka2fu.centralindia-01.azurewebsites.net/api/wake',
-      {
-        method: 'GET',
-        headers: {
-          'x-functions-key': azureKey
-        }
+    const azureEndpoint =
+      'https://inventoryhub-vm-controller-chb9gsgka2fu.centralindia-01.azurewebsites.net/api/wake';
+
+    const azureResponse = await fetch(azureEndpoint, {
+      method: 'GET',
+      headers: {
+        'x-functions-key': azureKey
       }
-    );
+    });
 
-    const data = await azureResponse.json().catch(() => ({}));
+    const text = await azureResponse.text();
 
-    return res.status(azureResponse.status).json(data);
+    return res.status(azureResponse.status).json({
+      azureStatus: azureResponse.status,
+      azureResponse: text
+    });
 
   } catch (error) {
     return res.status(500).json({
-      error: 'Failed to trigger Azure Function'
+      error: 'Vercel failed to call Azure Function',
+      message: error?.message || 'Unknown error'
     });
   }
 }
